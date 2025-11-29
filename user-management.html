@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - Providence 资金盘后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            min-height: 100vh;
+        }
+
+        /* 统一Header */
+        .top-header {
+            background: #001529;
+            color: white;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .top-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .admin-info {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+        }
+
+        /* 统一布局 */
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* 统一侧边栏 */
+        .sidebar {
+            width: 200px;
+            background: #001529;
+            color: white;
+            padding: 16px 0;
+        }
+        .menu-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .menu-item:hover {
+            background: #1890ff;
+            color: white;
+        }
+        .menu-item.active {
+            background: #1890ff;
+            color: white;
+        }
+
+        /* 内容区 */
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .toolbar {
+            background: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1890ff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+
+        .btn-success {
+            background: #52c41a;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #ff4d4f;
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: #faad14;
+            color: #fff;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: #8c8c8c;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .stat-card .change {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .stat-card .change.up {
+            color: #52c41a;
+        }
+
+        .stat-card .change.down {
+            color: #ff4d4f;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #fafafa;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            font-weight: 600;
+            color: #595959;
+            font-size: 13px;
+        }
+
+        td {
+            color: #262626;
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .badge-danger {
+            background: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+
+        .badge-warning {
+            background: #fffbe6;
+            color: #faad14;
+            border: 1px solid #ffe58f;
+        }
+
+        .badge-info {
+            background: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .badge-internal {
+            background: #f9f0ff;
+            color: #722ed1;
+            border: 1px solid #d3adf7;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-btns button {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: #fff;
+            margin: 40px auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .close {
+            font-size: 28px;
+            font-weight: 300;
+            color: #8c8c8c;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #262626;
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #595959;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #fff;
+            color: #262626;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .tree-view {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            max-height: 600px;
+            overflow: auto;
+            position: relative;
+        }
+
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .tree-node-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            margin: 12px;
+            min-width: 220px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tree-node-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .tree-node-card.level-0 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid #ffd700;
+        }
+
+        .tree-node-card.level-1 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .tree-node-card.level-2 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .tree-node-card.level-3 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .tree-node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .tree-node-name {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tree-node-vip {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tree-node-info {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            opacity: 0.95;
+        }
+
+        .tree-node-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .tree-node-stat-label {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .tree-node-stat-value {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .tree-children {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 24px;
+            position: relative;
+        }
+
+        .tree-line {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            width: 2px;
+            height: 24px;
+            background: linear-gradient(180deg, #d9d9d9 0%, transparent 100%);
+        }
+
+        .tree-branch {
+            position: relative;
+        }
+
+        .tree-branch::before {
+            content: '';
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            width: 2px;
+            height: 24px;
+            background: #d9d9d9;
+        }
+
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tree-connector {
+            position: absolute;
+            top: -12px;
+            width: 100%;
+            height: 2px;
+            background: #d9d9d9;
+            left: 0;
+        }
+
+        .team-stats-panel {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .team-stat-card {
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .team-stat-card .label {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-bottom: 4px;
+        }
+
+        .team-stat-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1890ff;
+        }
+
+        #teamTree {
+            min-height: 300px;
+        }
+
+        .empty-team {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8c8c8c;
+        }
+
+        .empty-team svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .login-log-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .login-log-item:last-child {
+            border-bottom: none;
+        }
+
+        .login-log-item .time {
+            font-weight: 600;
+            color: #595959;
+        }
+
+        .login-log-item .device {
+            color: #8c8c8c;
+            font-size: 12px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .pagination button {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .pagination .current {
+            padding: 6px 12px;
+            background: #1890ff;
+            color: #fff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 统一Header -->
+    <div class="top-header">
+        <h1>📊 Providence 后台管理系统</h1>
+        <div class="header-right">
+            <span class="admin-info">管理员</span>
+            <button class="btn" onclick="logout()" style="background: #ff4d4f; color: white; border: none;">退出</button>
+        </div>
+    </div>
+
+    <!-- 统一布局 -->
+    <div class="layout">
+        <!-- 统一侧边栏 -->
+        <div class="sidebar">
+            <a href="index.html" class="menu-item">📊 数据概览</a>
+            <a href="user-management.html" class="menu-item active">👥 用户管理</a>
+            <div class="menu-item" onclick="alert('项目管理功能')">📈 项目管理</div>
+            <div class="menu-item" onclick="alert('财务管理功能')">💰 财务管理</div>
+            <div class="menu-item" onclick="alert('实名认证功能')">🆔 实名认证</div>
+            <div class="menu-item" onclick="alert('系统设置功能')">⚙️ 系统设置</div>
+            <div class="menu-item" onclick="alert('操作日志功能')">📋 操作日志</div>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="header">
+                    <h2>👥 用户管理</h2>
+                </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>总用户数</h3>
+                <div class="value" id="totalUsers">0</div>
+                <div class="change up">↑ 较昨日 +0</div>
+            </div>
+            <div class="stat-card">
+                <h3>正常用户</h3>
+                <div class="value" id="activeUsers">0</div>
+                <div class="change up">状态正常</div>
+            </div>
+            <div class="stat-card">
+                <h3>冻结用户</h3>
+                <div class="value" id="frozenUsers">0</div>
+                <div class="change down">需关注</div>
+            </div>
+            <div class="stat-card">
+                <h3>内部用户</h3>
+                <div class="value" id="internalUsers">0</div>
+                <div class="change">不计入统计</div>
+            </div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="showAddUserModal()">➕ 添加用户</button>
+            <button class="btn btn-success" onclick="exportUsers()">📥 导出数据</button>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索用户名、ID、手机号..." onkeyup="searchUsers(event)">
+                <button class="btn btn-primary" onclick="searchUsers()">🔍 搜索</button>
+            </div>
+
+            <div class="filter-group">
+                <select id="vipFilter" onchange="filterUsers()">
+                    <option value="">全部VIP</option>
+                    <option value="0">VIP0</option>
+                    <option value="1">VIP1</option>
+                    <option value="2">VIP2</option>
+                    <option value="3">VIP3</option>
+                    <option value="4">VIP4</option>
+                    <option value="5">VIP5</option>
+                    <option value="6">VIP6</option>
+                    <option value="7">VIP7</option>
+                    <option value="8">VIP8</option>
+                </select>
+                <select id="internalFilter" onchange="filterUsers()">
+                    <option value="">全部类型</option>
+                    <option value="0">普通用户</option>
+                    <option value="1">内部用户</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 用户列表 -->
+        <div class="card">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>VIP等级</th>
+                            <th>类型</th>
+                            <th>CNY余额</th>
+                            <th>USDT余额</th>
+                            <th>累计投资</th>
+                            <th>团队人数</th>
+                            <th>推荐人</th>
+                            <th>状态</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTable">
+                        <tr>
+                            <td colspan="12" style="text-align: center; padding: 40px; color: #8c8c8c;">
+                                加载中...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑用户模态框 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加用户</h2>
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>用户名 *</label>
+                            <input type="text" id="username" required placeholder="请输入用户名">
+                        </div>
+                        <div class="form-group">
+                            <label>密码 *</label>
+                            <input type="password" id="password" placeholder="留空则不修改">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>真实姓名</label>
+                            <input type="text" id="realname" placeholder="请输入真实姓名">
+                        </div>
+                        <div class="form-group">
+                            <label>VIP等级</label>
+                            <select id="vipLevel">
+                                <option value="0">VIP0</option>
+                                <option value="1">VIP1</option>
+                                <option value="2">VIP2</option>
+                                <option value="3">VIP3</option>
+                                <option value="4">VIP4</option>
+                                <option value="5">VIP5</option>
+                                <option value="6">VIP6</option>
+                                <option value="7">VIP7</option>
+                                <option value="8">VIP8</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>CNY余额</label>
+                            <input type="number" id="balanceCny" value="0" step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>USDT余额</label>
+                            <input type="number" id="balanceUsdt" value="0" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>推荐人ID</label>
+                            <input type="number" id="inviterId" value="0" placeholder="0表示无推荐人">
+                        </div>
+                        <div class="form-group">
+                            <label>邀请码</label>
+                            <input type="text" id="inviteCode" placeholder="自动生成8位数字">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>账户状态</label>
+                            <select id="userStatus">
+                                <option value="1">正常</option>
+                                <option value="0">冻结</option>
+                            </select>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="isInternal">
+                            <label>内部用户（不计入投资统计）</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('userModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveUser()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 团队关系图模态框 -->
+    <div id="teamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>团队关系图</h2>
+                <span class="close" onclick="closeModal('teamModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="teamTree" class="tree-view">
+                    <div style="text-align: center; padding: 40px; color: #8c8c8c;">
+                        加载中...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('teamModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录记录模态框 -->
+    <div id="loginLogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>登录记录</h2>
+                <span class="close" onclick="closeModal('loginLogModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="loginLogList">
+                    <div style="text-align: center; padding: 40px; color: #8c8c8c;">
+                        加载中...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('loginLogModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 生产环境API地址
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8082/api'  // 开发环境
+            : 'https://api.4kp3l0iq.top/api';  // 生产环境
+        let currentPage = 1;
+        let pageSize = 20;
+        let allUsers = [];
+        let filteredUsers = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+        });
+
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const result = await AdminAPI.get('/providence/users');
+
+                if (result.code === 1) {
+                    // 只保留正常用户，过滤掉冻结用户
+                    allUsers = (result.data || []).filter(u => u.status == 1);
+                    filteredUsers = allUsers;
+                    updateStats();
+                    renderUsers();
+                } else {
+                    alert('加载用户列表失败：' + result.msg);
+                }
+            } catch (error) {
+                console.error('加载用户列表失败:', error);
+                alert('加载用户列表失败');
+            }
+        }
+
+        // 更新统计卡片
+        function updateStats() {
+            // 只统计正常用户（排除冻结用户）
+            const activeUsers = allUsers.filter(u => u.status == 1);
+            const total = activeUsers.length;
+            const internal = activeUsers.filter(u => u.is_internal == 1).length;
+            const normal = activeUsers.filter(u => u.is_internal == 0).length;
+
+            document.getElementById('totalUsers').textContent = total;
+            document.getElementById('activeUsers').textContent = normal;
+            document.getElementById('frozenUsers').textContent = 0; // 不显示冻结用户
+            document.getElementById('internalUsers').textContent = internal;
+        }
+
+        // 渲染用户列表
+        function renderUsers() {
+            const tbody = document.getElementById('userTable');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageUsers = filteredUsers.slice(start, end);
+
+            if (pageUsers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px; color: #8c8c8c;">暂无数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pageUsers.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>
+                        <strong>${user.username}</strong>
+                        ${user.is_internal == 1 ? '<span class="badge badge-internal">内部</span>' : ''}
+                    </td>
+                    <td><span class="badge badge-info">VIP${user.vip_level}</span></td>
+                    <td>${user.is_internal == 1 ? '内部用户' : '普通用户'}</td>
+                    <td>¥${parseFloat(user.balance_cny || 0).toLocaleString()}</td>
+                    <td>${parseFloat(user.balance_usdt || 0).toFixed(2)} USDT</td>
+                    <td>¥${parseFloat(user.total_investment || 0).toLocaleString()}</td>
+                    <td>${user.team_count || 0}人</td>
+                    <td>${user.inviter_id > 0 ? `ID: ${user.inviter_id}` : '-'}</td>
+                    <td>
+                        ${user.status == 1 ?
+                            '<span class="badge badge-success">正常</span>' :
+                            '<span class="badge badge-danger">冻结</span>'}
+                    </td>
+                    <td>${formatDate(user.create_time)}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-primary" onclick="editUser(${user.id})">编辑</button>
+                            <button class="btn btn-warning" onclick="viewTeam(${user.id})">团队</button>
+                            <button class="btn btn-info" onclick="viewLoginLog(${user.id})">日志</button>
+                            <button class="btn btn-danger" onclick="freezeUser(${user.id})">冻结</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            renderPagination();
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredUsers.length / pageSize);
+            const pagination = document.getElementById('pagination');
+
+            let html = '<button onclick="changePage(-1)" ' + (currentPage === 1 ? 'disabled' : '') + '>上一页</button>';
+            html += `<span class="current">第 ${currentPage} / ${totalPages} 页</span>`;
+            html += '<button onclick="changePage(1)" ' + (currentPage >= totalPages ? 'disabled' : '') + '>下一页</button>';
+
+            pagination.innerHTML = html;
+        }
+
+        // 切换页面
+        function changePage(delta) {
+            currentPage += delta;
+            renderUsers();
+        }
+
+        // 搜索用户
+        function searchUsers(event) {
+            if (event && event.keyCode !== 13) return;
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!searchTerm) {
+                filteredUsers = allUsers;
+            } else {
+                filteredUsers = allUsers.filter(user =>
+                    user.username.toLowerCase().includes(searchTerm) ||
+                    user.id.toString().includes(searchTerm) ||
+                    (user.phone && user.phone.includes(searchTerm))
+                );
+            }
+
+            currentPage = 1;
+            filterUsers();
+        }
+
+        // 过滤用户
+        function filterUsers() {
+            const vipFilter = document.getElementById('vipFilter').value;
+            const internalFilter = document.getElementById('internalFilter').value;
+
+            filteredUsers = allUsers.filter(user => {
+                // 只显示正常用户
+                if (user.status != 1) return false;
+                if (vipFilter !== '' && user.vip_level != vipFilter) return false;
+                if (internalFilter !== '' && user.is_internal != internalFilter) return false;
+                return true;
+            });
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredUsers = filteredUsers.filter(user =>
+                    user.username.toLowerCase().includes(searchTerm) ||
+                    user.id.toString().includes(searchTerm)
+                );
+            }
+
+            currentPage = 1;
+            renderUsers();
+        }
+
+        // 显示添加用户模态框
+        function showAddUserModal() {
+            document.getElementById('modalTitle').textContent = '添加用户';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('password').required = true;
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        // 编辑用户
+        async function editUser(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            document.getElementById('modalTitle').textContent = '编辑用户';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('username').value = user.username;
+            document.getElementById('password').value = '';
+            document.getElementById('password').required = false;
+            document.getElementById('realname').value = user.realname || '';
+            document.getElementById('vipLevel').value = user.vip_level;
+            document.getElementById('balanceCny').value = user.balance_cny;
+            document.getElementById('balanceUsdt').value = user.balance_usdt;
+            document.getElementById('inviterId').value = user.inviter_id;
+            document.getElementById('inviteCode').value = user.invite_code || '';
+            document.getElementById('userStatus').value = user.status;
+            document.getElementById('isInternal').checked = user.is_internal == 1;
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        // 保存用户
+        async function saveUser() {
+            const userId = document.getElementById('userId').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+
+            if (!userId && !password) {
+                alert('添加新用户时必须设置密码');
+                return;
+            }
+
+            const data = {
+                username,
+                password,
+                realname: document.getElementById('realname').value,
+                vip_level: document.getElementById('vipLevel').value,
+                balance_cny: document.getElementById('balanceCny').value,
+                balance_usdt: document.getElementById('balanceUsdt').value,
+                inviter_id: document.getElementById('inviterId').value,
+                invite_code: document.getElementById('inviteCode').value,
+                status: document.getElementById('userStatus').value,
+                is_internal: document.getElementById('isInternal').checked ? 1 : 0
+            };
+
+            try {
+                let result;
+                if (userId) {
+                    result = await AdminAPI.post(`/providence/users/${userId}/balance`, data);
+                } else {
+                    // 创建用户需要调用不同的API，这里先提示
+                    alert('创建用户功能需要后端支持，请联系开发人员');
+                    return;
+                }
+
+                if (result.code === 1) {
+                    alert(userId ? '更新成功' : '添加成功');
+                    closeModal('userModal');
+                    loadUsers();
+                } else {
+                    alert(result.msg || '操作失败');
+                }
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败');
+            }
+        }
+
+        // 冻结用户
+        async function freezeUser(userId) {
+            if (!confirm('确定要冻结该用户吗？')) return;
+
+            try {
+                const result = await AdminAPI.post(`/providence/users/${userId}/status`, {
+                    status: 0
+                });
+
+                if (result.code === 1) {
+                    alert('冻结成功');
+                    loadUsers();
+                } else {
+                    alert(result.msg || '冻结失败');
+                }
+            } catch (error) {
+                alert('冻结失败');
+            }
+        }
+
+        // 解冻用户
+        async function unfreezeUser(userId) {
+            if (!confirm('确定要解冻该用户吗？')) return;
+
+            try {
+                const result = await AdminAPI.post(`/providence/users/${userId}/status`, {
+                    status: 1
+                });
+
+                if (result.code === 1) {
+                    alert('解冻成功');
+                    loadUsers();
+                } else {
+                    alert(result.msg || '解冻失败');
+                }
+            } catch (error) {
+                alert('解冻失败');
+            }
+        }
+
+        // 查看团队关系
+        async function viewTeam(userId) {
+            document.getElementById('teamModal').style.display = 'block';
+            document.getElementById('teamTree').innerHTML = '<div style="text-align: center; padding: 40px; color: #8c8c8c;">加载中...</div>';
+
+            try {
+                // 团队树API需要确认后端路由
+                const result = await AdminAPI.get(`/providence/users/${userId}`);
+                // 如果后端没有团队树接口，使用用户详情中的团队信息
+
+                if (result.code === 1) {
+                    renderTeamTree(result.data);
+                } else {
+                    document.getElementById('teamTree').innerHTML = '<div style="text-align: center; padding: 40px; color: #ff4d4f;">加载失败</div>';
+                }
+            } catch (error) {
+                document.getElementById('teamTree').innerHTML = '<div style="text-align: center; padding: 40px; color: #ff4d4f;">加载失败</div>';
+            }
+        }
+
+        // 渲染团队树
+        function renderTeamTree(data) {
+            const tree = document.getElementById('teamTree');
+
+            if (!data || !data.user) {
+                tree.innerHTML = `
+                    <div class="empty-team">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <div>暂无团队数据</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // 计算统计数据
+            function calculateStats(user) {
+                let totalMembers = 0;
+                let totalInvestment = 0;
+                let maxLevel = 0;
+
+                function traverse(node, level = 0) {
+                    totalMembers++;
+                    totalInvestment += parseFloat(node.total_investment || 0);
+                    maxLevel = Math.max(maxLevel, level);
+
+                    if (node.children && node.children.length > 0) {
+                        node.children.forEach(child => traverse(child, level + 1));
+                    }
+                }
+
+                traverse(user);
+                return { totalMembers, totalInvestment, maxLevel };
+            }
+
+            const stats = calculateStats(data.user);
+
+            // 构建统计面板
+            let statsHtml = `
+                <div class="team-stats-panel">
+                    <div class="team-stat-card">
+                        <div class="label">团队总人数</div>
+                        <div class="value">${stats.totalMembers}</div>
+                    </div>
+                    <div class="team-stat-card">
+                        <div class="label">团队总投资</div>
+                        <div class="value">¥${stats.totalInvestment.toLocaleString()}</div>
+                    </div>
+                    <div class="team-stat-card">
+                        <div class="label">最大层级</div>
+                        <div class="value">${stats.maxLevel + 1}级</div>
+                    </div>
+                    <div class="team-stat-card">
+                        <div class="label">直推人数</div>
+                        <div class="value">${data.user.children ? data.user.children.length : 0}人</div>
+                    </div>
+                </div>
+            `;
+
+            // 构建树形结构
+            function buildTreeNode(user, level = 0) {
+                const levelClass = `level-${Math.min(level, 3)}`;
+                const childCount = user.children ? user.children.length : 0;
+
+                let html = `
+                    <div class="tree-node-card ${levelClass}">
+                        <div class="tree-node-header">
+                            <div class="tree-node-name">
+                                ${level === 0 ? '👑 ' : ''}${user.username}
+                                <span class="tree-node-vip">VIP${user.vip_level}</span>
+                            </div>
+                        </div>
+                        <div class="tree-node-info">
+                            <div class="tree-node-stat">
+                                <div class="tree-node-stat-label">累计投资</div>
+                                <div class="tree-node-stat-value">¥${parseFloat(user.total_investment || 0).toLocaleString()}</div>
+                            </div>
+                            <div class="tree-node-stat">
+                                <div class="tree-node-stat-label">团队人数</div>
+                                <div class="tree-node-stat-value">${user.team_count || childCount}人</div>
+                            </div>
+                            <div class="tree-node-stat">
+                                <div class="tree-node-stat-label">用户ID</div>
+                                <div class="tree-node-stat-value">#${user.id}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (user.children && user.children.length > 0 && level < 3) {
+                    html += '<div class="tree-children">';
+                    user.children.forEach((child, index) => {
+                        html += '<div class="tree-branch">';
+                        html += buildTreeNode(child, level + 1);
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+
+                return html;
+            }
+
+            tree.innerHTML = statsHtml + '<div class="tree-container">' + buildTreeNode(data.user) + '</div>';
+        }
+
+        // 查看登录记录
+        async function viewLoginLog(userId) {
+            document.getElementById('loginLogModal').style.display = 'block';
+            document.getElementById('loginLogList').innerHTML = '<div style="text-align: center; padding: 40px; color: #8c8c8c;">加载中...</div>';
+
+            try {
+                // 登录日志API需要确认后端路由
+                const result = { code: 1, data: [] }; // 暂时返回空数据
+
+                if (result.code === 1 && result.data && result.data.length > 0) {
+                    let html = '';
+                    result.data.forEach(log => {
+                        html += `
+                            <div class="login-log-item">
+                                <div>
+                                    <div class="time">${formatDateTime(log.login_time)}</div>
+                                    <div class="device">
+                                        ${log.device_type || '未知设备'} | IP: ${log.login_ip || '未知'}
+                                        ${log.login_status == 1 ? '<span class="badge badge-success">成功</span>' : '<span class="badge badge-danger">失败</span>'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('loginLogList').innerHTML = html;
+                } else {
+                    document.getElementById('loginLogList').innerHTML = '<div style="text-align: center; padding: 40px; color: #8c8c8c;">暂无登录记录</div>';
+                }
+            } catch (error) {
+                document.getElementById('loginLogList').innerHTML = '<div style="text-align: center; padding: 40px; color: #ff4d4f;">加载失败</div>';
+            }
+        }
+
+        // 导出用户
+        function exportUsers() {
+            alert('导出功能开发中...');
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 格式化日期时间
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出吗？')) {
+                window.location.href = '/login.html';
+            }
+        }
+    </script>
+        </div><!-- /container -->
+    </div><!-- /content-wrapper -->
+</div><!-- /layout -->
+</body>
+</html>

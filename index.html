@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Providence管理后台</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f0f2f5;
+        }
+
+        .admin-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 240px;
+            background: #001529;
+            color: #fff;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .menu-group {
+            padding: 10px 0;
+        }
+
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            text-transform: uppercase;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .menu-item.active {
+            background: #1890ff;
+            color: #fff;
+        }
+
+        .menu-item i {
+            margin-right: 10px;
+            width: 16px;
+            display: inline-block;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #fff;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 4px rgba(0,21,41,0.08);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1890ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* 卡片 */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .stat-label {
+            color: #8c8c8c;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .stat-change.up {
+            color: #52c41a;
+        }
+
+        .stat-change.down {
+            color: #f5222d;
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #fafafa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            color: #000;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover {
+            background: #fafafa;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1890ff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+
+        .btn-success {
+            background: #52c41a;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #f5222d;
+            color: #fff;
+        }
+
+        .btn-default {
+            background: #fff;
+            color: #595959;
+            border: 1px solid #d9d9d9;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-pending {
+            background: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+
+        .status-inactive {
+            background: #f5f5f5;
+            color: #8c8c8c;
+            border: 1px solid #d9d9d9;
+        }
+
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .page-btn.active {
+            background: #1890ff;
+            color: #fff;
+            border-color: #1890ff;
+        }
+
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8c8c8c;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1890ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="logo">
+                <h2>Providence Admin</h2>
+        </div>
+
+            <div class="menu-group">
+                <div class="menu-title">数据中心</div>
+                <button class="menu-item active" data-page="dashboard">
+                    <i>📊</i> 数据概览
+                </button>
+                <button class="menu-item" data-page="analytics">
+                    <i>📈</i> 统计分析
+                </button>
+                </div>
+
+            <div class="menu-group">
+                <div class="menu-title">用户管理</div>
+                <button class="menu-item" data-page="users">
+                    <i>👥</i> 用户列表
+                </button>
+                <button class="menu-item" data-page="kyc">
+                    <i>🆔</i> KYC认证
+                </button>
+                <button class="menu-item" data-page="vip">
+                    <i>💎</i> VIP管理
+                </button>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-title">财务管理</div>
+                <button class="menu-item" data-page="recharge">
+                    <i>💰</i> 充值管理
+                </button>
+                <button class="menu-item" data-page="withdraw">
+                    <i>💸</i> 提现管理
+                </button>
+                <button class="menu-item" data-page="transactions">
+                    <i>📝</i> 交易记录
+                </button>
+                <button class="menu-item" data-page="ribao">
+                    <i>🏦</i> 日利宝
+                </button>
+                </div>
+
+            <div class="menu-group">
+                <div class="menu-title">项目管理</div>
+                <button class="menu-item" data-page="projects">
+                    <i>📦</i> 项目列表
+                </button>
+                <button class="menu-item" data-page="investments">
+                    <i>💼</i> 投资订单
+                </button>
+                <button class="menu-item" data-page="earnings">
+                    <i>💵</i> 收益结算
+                </button>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-title">团队管理</div>
+                <button class="menu-item" data-page="teams">
+                    <i>🏢</i> 团队列表
+                </button>
+                <button class="menu-item" data-page="referrals">
+                    <i>🎁</i> 推荐奖励
+                </button>
+            </div>
+
+            <div class="menu-group">
+                <div class="menu-title">系统设置</div>
+                <button class="menu-item" data-page="config">
+                    <i>⚙️</i> 系统配置
+                </button>
+                <button class="menu-item" data-page="banks">
+                    <i>🏦</i> 银行卡管理
+                </button>
+                <button class="menu-item" data-page="notices">
+                    <i>📢</i> 公告管理
+                </button>
+                <button class="menu-item" data-page="logs">
+                    <i>📋</i> 操作日志
+                </button>
+            </div>
+            </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部栏 -->
+            <div class="header">
+                <div class="header-left">
+                    <h1 id="page-title">数据概览</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-default btn-sm" onclick="location.reload()">
+                        🔄 刷新
+                    </button>
+                    <div class="user-info">
+                        <div class="user-avatar">A</div>
+                        <span id="admin-name">Admin</span>
+                        <button class="btn btn-default btn-sm" onclick="logout()">
+                            退出
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 内容区 -->
+            <div class="content" id="content">
+                <!-- 动态加载内容 -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script src="admin.js"></script>
+    <script src="config-page.js"></script>
+    <script src="project-rebate-system.js"></script>
+</body>
+</html>

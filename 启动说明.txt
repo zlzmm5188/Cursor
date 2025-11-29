@@ -1,0 +1,11 @@
+🚀 后台管理系统已启动！
+
+访问地址：
+http://localhost:8083/index.html
+
+功能页面：
+- 主导航页: http://localhost:8083/index.html
+- 用户管理: http://localhost:8083/user-management.html
+
+停止服务器：
+按 Ctrl+C 或关闭终端

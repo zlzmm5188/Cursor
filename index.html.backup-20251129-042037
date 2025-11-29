@@ -1,0 +1,2636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Providence 后台管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: #001529;
+            color: white;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .container {
+            display: flex;
+            height: calc(100vh - 64px);
+        }
+        .sidebar {
+            width: 200px;
+            background: #001529;
+            color: white;
+            padding: 16px 0;
+        }
+        .menu-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .menu-item:hover {
+            background: #1890ff;
+        }
+        .menu-item.active {
+            background: #1890ff;
+        }
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #f5f5f5;
+        }
+        .content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: white;
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 16px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1890ff;
+            margin: 8px 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 16px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+            color: #333;
+        }
+        th {
+            background: #fafafa;
+            font-weight: 600;
+            font-size: 14px;
+            color: #262626;
+            white-space: nowrap;
+        }
+        td {
+            color: #595959;
+            font-size: 14px;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+        .btn-danger {
+            background: #ff4d4f;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #ff7875;
+        }
+        .btn:not(.btn-primary):not(.btn-danger) {
+            background: #f5f5f5;
+            color: #595959;
+            border: 1px solid #d9d9d9;
+        }
+        .btn:not(.btn-primary):not(.btn-danger):hover {
+            background: #e6f7ff;
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        .hidden {
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background: #ffffff;
+            margin: 2% auto;
+            padding: 40px;
+            border-radius: 12px;
+            width: 900px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            position: relative;
+        }
+        .modal-content h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e8e8e8;
+        }
+        .modal-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 16px;
+            padding-left: 12px;
+            border-left: 3px solid #1890ff;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #262626;
+            font-size: 14px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #ffffff;
+            color: #262626;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group input[type="email"]:focus,
+        .form-group input[type="password"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        }
+        .form-group input[type="text"]:hover,
+        .form-group input[type="number"]:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #40a9ff;
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #bfbfbf;
+        }
+        .form-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1890ff;
+        }
+        .form-group select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            padding-right: 36px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            line-height: 1.5;
+        }
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            color: #8c8c8c;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 24px;
+            margin-top: 8px;
+            padding: 12px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: normal;
+            color: #262626;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .checkbox-label:hover {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1890ff;
+        }
+        .modal-footer {
+            margin-top: 24px;
+            text-align: right;
+        }
+        .settings-panel {
+            display: block;
+        }
+        .settings-panel.hidden {
+            display: none;
+        }
+        .settings-panel h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 16px;
+            margin-top: 0;
+        }
+        .settings-panel h4 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #595959;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>📊 Providence 后台管理系统</h2>
+        <div>
+            <span id="adminName">管理员</span>
+            <button class="btn btn-danger" onclick="logout()" style="margin-left: 16px;">退出</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="menu-item active" onclick="showPage('dashboard')">📊 数据概览</div>
+            <div class="menu-item" onclick="showPage('users')">👥 用户管理</div>
+            <div class="menu-item" onclick="showPage('projects')">📈 项目管理</div>
+            <div class="menu-item" onclick="showPage('finance')">💰 财务管理</div>
+            <div class="menu-item" onclick="showPage('kyc')">🆔 实名认证审核</div>
+            <div class="menu-item" onclick="showPage('settings')">⚙️ 系统设置</div>
+            <div class="menu-item" onclick="showPage('logs')">📋 操作日志</div>
+        </div>
+
+        <div class="content">
+            <!-- 数据概览 -->
+            <div id="dashboard" class="page">
+                <h2 style="margin-bottom: 24px;">数据概览</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">总用户数</div>
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-label" style="margin-top: 8px; font-size: 12px;">活跃用户: <span id="activeUsers">0</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">总投资额</div>
+                        <div class="stat-value" id="totalInvestment">¥0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">今日充值</div>
+                        <div class="stat-value" id="todayRecharge">¥0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">今日提现</div>
+                        <div class="stat-value" id="todayWithdraw">¥0</div>
+                    </div>
+                </div>
+                <div class="stats-grid" style="margin-top: 16px;">
+                    <div class="stat-card">
+                        <div class="stat-label">待审核实名认证</div>
+                        <div class="stat-value" id="pendingKyc">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">待审核充值</div>
+                        <div class="stat-value" id="pendingRecharge">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">待审核提现</div>
+                        <div class="stat-value" id="pendingWithdraw">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">总收益</div>
+                        <div class="stat-value" id="totalRevenue">¥0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理 -->
+            <div id="users" class="page hidden">
+                <h2 style="margin-bottom: 24px;">用户管理</h2>
+                <div class="card" style="margin-bottom: 16px;">
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="userSearch" placeholder="搜索用户名、ID..." style="flex: 1; min-width: 200px; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                        <select id="userStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            <option value="">全部状态</option>
+                            <option value="active">正常</option>
+                            <option value="frozen">冻结</option>
+                        </select>
+                        <select id="userVipFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            <option value="">全部VIP</option>
+                            <option value="0">VIP0</option>
+                            <option value="1">VIP1</option>
+                            <option value="2">VIP2</option>
+                            <option value="3">VIP3</option>
+                            <option value="4">VIP4</option>
+                            <option value="5">VIP5</option>
+                            <option value="6">VIP6</option>
+                            <option value="7">VIP7</option>
+                            <option value="8">VIP8</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="searchUsers()">搜索</button>
+                        <button class="btn" onclick="resetUserSearch()">重置</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <table id="userTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>VIP等级</th>
+                                <th>实名认证</th>
+                                <th>CNY余额</th>
+                                <th>USDT余额</th>
+                                <th>累计投资</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <tr><td colspan="9" style="text-align: center;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 项目管理 -->
+            <div id="projects" class="page hidden">
+                <h2 style="margin-bottom: 24px;">项目管理</h2>
+                <div class="card">
+                    <button class="btn btn-primary" onclick="createProject()" style="margin-bottom: 16px;">新建项目</button>
+                    <table id="projectTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>项目名称</th>
+                                <th>年化收益</th>
+                                <th>期限(天)</th>
+                                <th>币种</th>
+                                <th>总额度</th>
+                                <th>已售</th>
+                                <th>剩余</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTableBody">
+                            <tr><td colspan="10" style="text-align: center;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 财务管理 -->
+            <div id="finance" class="page hidden">
+                <h2 style="margin-bottom: 24px;">财务管理</h2>
+
+                <!-- 充值审核 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 16px;">充值审核</h3>
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f0f2f5; border-radius: 4px; font-size: 13px; color: #666;">
+                        <strong>说明：</strong>银行卡转账充值需要人工审核，需查看转账凭证后审核通过或拒绝。USDT、支付宝等自动到账方式无需审核。
+                    </div>
+                    <table id="rechargeTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户</th>
+                                <th>充值方式</th>
+                                <th>金额</th>
+                                <th>币种</th>
+                                <th>交易单号</th>
+                                <th>提交时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rechargeTableBody">
+                            <tr><td colspan="9" style="text-align: center;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 提现审核 -->
+                <div class="card" style="margin-top: 16px;">
+                    <h3 style="margin-bottom: 16px;">提现审核</h3>
+                    <table id="withdrawTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户</th>
+                                <th>提现方式</th>
+                                <th>金额</th>
+                                <th>币种</th>
+                                <th>收款账户</th>
+                                <th>申请时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawTableBody">
+                            <tr><td colspan="9" style="text-align: center;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 实名认证审核 -->
+            <div id="kyc" class="page hidden">
+                <h2 style="margin-bottom: 24px;">实名认证审核</h2>
+                <div class="card">
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn btn-primary" onclick="loadKycList('pending')" style="margin-right: 8px;">待审核</button>
+                        <button class="btn" onclick="loadKycList('approved')" style="margin-right: 8px;">已通过</button>
+                        <button class="btn" onclick="loadKycList('rejected')">已拒绝</button>
+                    </div>
+                    <table id="kycTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户ID</th>
+                                <th>用户名</th>
+                                <th>真实姓名</th>
+                                <th>身份证号</th>
+                                <th>提交时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kycTableBody">
+                            <tr><td colspan="8" style="text-align: center;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 系统设置 - 集中式配置面板 -->
+            <div id="settings" class="page hidden">
+                <h2 style="margin-bottom: 24px;">系统设置</h2>
+                <div class="card">
+                    <div style="margin-bottom: 20px; border-bottom: 1px solid #e8e8e8; padding-bottom: 12px;">
+                        <button class="btn btn-primary" onclick="switchSettingsTab('exchange')" id="tabExchange">💱 汇率设置</button>
+                        <button class="btn" onclick="switchSettingsTab('vip')" id="tabVip">🎖️ VIP会员升级</button>
+                        <button class="btn" onclick="switchSettingsTab('team')" id="tabTeam">👥 团队管理奖</button>
+                        <button class="btn" onclick="switchSettingsTab('trial')" id="tabTrial">🎁 新人体验金</button>
+                        <button class="btn" onclick="switchSettingsTab('investment')" id="tabInvestment">📊 投资配置</button>
+                        <button class="btn" onclick="switchSettingsTab('recharge')" id="tabRecharge">💳 充值配置</button>
+                        <button class="btn" onclick="switchSettingsTab('withdraw')" id="tabWithdraw">💰 提现配置</button>
+                        <button class="btn" onclick="switchSettingsTab('ribao')" id="tabRibao">📈 日利宝配置</button>
+                    </div>
+
+                    <!-- 汇率设置 -->
+                    <div id="settingsExchange" class="settings-panel">
+                        <h3>汇率设置</h3>
+                        <div class="form-group">
+                            <label>USDT/CNY汇率 *</label>
+                            <input type="number" id="exchangeRate" step="0.01" min="0" value="7.2">
+                            <small style="color: #8c8c8c;">用于计算用户资产和投资额度</small>
+                        </div>
+                    </div>
+
+                    <!-- VIP会员升级 -->
+                    <div id="settingsVip" class="settings-panel hidden">
+                        <h3>VIP会员升级配置</h3>
+                        <div id="vipConfigTable" style="overflow-x: auto;"></div>
+                        <button class="btn btn-primary" onclick="addVipLevel()" style="margin-top: 12px;">➕ 添加VIP级别</button>
+                    </div>
+
+                    <!-- 团队管理奖 -->
+                    <div id="settingsTeam" class="settings-panel hidden">
+                        <h3>团队管理奖配置</h3>
+                        <div id="teamRewardTable" style="overflow-x: auto;"></div>
+                        <button class="btn btn-primary" onclick="addTeamRewardLevel()" style="margin-top: 12px;">➕ 添加奖励等级</button>
+                    </div>
+
+                    <!-- 新人体验金 -->
+                    <div id="settingsTrial" class="settings-panel hidden">
+                        <h3>新人体验金规则</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>体验金额度 (CNY) *</label>
+                                <input type="number" id="trialAmountCny" step="0.01" min="0" value="888">
+                            </div>
+                            <div class="form-group">
+                                <label>体验金额度 (USDT) *</label>
+                                <input type="number" id="trialAmountUsdt" step="0.01" min="0" value="123">
+                            </div>
+                            <div class="form-group">
+                                <label>未投资自动回收期限 (天) *</label>
+                                <input type="number" id="trialDuration" min="1" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>要求实名认证</label>
+                                <select id="trialRequireKyc">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>要求绑定支付方式</label>
+                                <select id="trialRequirePayment">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>每人限领一次</label>
+                                <select id="trialOnePerUser">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>规则说明</label>
+                            <textarea id="trialDescription" rows="3" style="width: 100%;">必须完成实名认证后领取，每人限领一次，7天内未投资自动回收，一旦投资跟随项目周期，收益可提现但本金自动回收</textarea>
+                        </div>
+                    </div>
+
+                    <!-- 投资配置 -->
+                    <div id="settingsInvestment" class="settings-panel hidden">
+                        <h3>投资配置</h3>
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">人民币 (CNY)</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>最低投资额</label>
+                                <input type="number" id="investMinCny" min="0" value="1000">
+                            </div>
+                            <div class="form-group">
+                                <label>最高投资额</label>
+                                <input type="number" id="investMaxCny" min="0" value="1000000">
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">USDT</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>最低投资额</label>
+                                <input type="number" id="investMinUsdt" min="0" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>最高投资额</label>
+                                <input type="number" id="investMaxUsdt" min="0" value="100000">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                            <div class="form-group">
+                                <label>要求实名认证</label>
+                                <select id="investRequireKyc">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>要求绑定支付方式</label>
+                                <select id="investRequirePayment">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 充值配置 -->
+                    <div id="settingsRecharge" class="settings-panel hidden">
+                        <h3>充值配置</h3>
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">人民币 (CNY)</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div class="form-group">
+                                <label>最低充值额</label>
+                                <input type="number" id="rechargeMinCny" min="0" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>最高充值额</label>
+                                <input type="number" id="rechargeMaxCny" min="0" value="500000">
+                            </div>
+                            <div class="form-group">
+                                <label>手续费率 (%)</label>
+                                <input type="number" id="rechargeFeeRateCny" step="0.01" min="0" value="0">
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">USDT</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div class="form-group">
+                                <label>最低充值额</label>
+                                <input type="number" id="rechargeMinUsdt" min="0" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label>最高充值额</label>
+                                <input type="number" id="rechargeMaxUsdt" min="0" value="50000">
+                            </div>
+                            <div class="form-group">
+                                <label>手续费率 (%)</label>
+                                <input type="number" id="rechargeFeeRateUsdt" step="0.01" min="0" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 提现配置 -->
+                    <div id="settingsWithdraw" class="settings-panel hidden">
+                        <h3>提现配置</h3>
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">人民币 (CNY)</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div class="form-group">
+                                <label>最低提现额</label>
+                                <input type="number" id="withdrawMinCny" min="0" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>最高提现额</label>
+                                <input type="number" id="withdrawMaxCny" min="0" value="500000">
+                            </div>
+                            <div class="form-group">
+                                <label>手续费率 (%)</label>
+                                <input type="number" id="withdrawFeeRateCny" step="0.01" min="0" value="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label>日提现限额</label>
+                                <input type="number" id="withdrawDailyLimitCny" min="0" value="50000">
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">USDT</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div class="form-group">
+                                <label>最低提现额</label>
+                                <input type="number" id="withdrawMinUsdt" min="0" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label>最高提现额</label>
+                                <input type="number" id="withdrawMaxUsdt" min="0" value="50000">
+                            </div>
+                            <div class="form-group">
+                                <label>手续费率 (%)</label>
+                                <input type="number" id="withdrawFeeRateUsdt" step="0.01" min="0" value="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label>日提现限额</label>
+                                <input type="number" id="withdrawDailyLimitUsdt" min="0" value="5000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 日利宝配置 -->
+                    <div id="settingsRibao" class="settings-panel hidden">
+                        <h3>日利宝配置</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label>日利率 (CNY) (%)</label>
+                                <input type="number" id="ribaoRateCny" step="0.0001" min="0" max="1" value="0.0005">
+                                <small style="color: #8c8c8c;">每日计息</small>
+                            </div>
+                            <div class="form-group">
+                                <label>日利率 (USDT) (%)</label>
+                                <input type="number" id="ribaoRateUsdt" step="0.0001" min="0" max="1" value="0.0005">
+                                <small style="color: #8c8c8c;">每日计息</small>
+                            </div>
+                            <div class="form-group">
+                                <label>最低金额 (CNY)</label>
+                                <input type="number" id="ribaoMinCny" min="0" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>最低金额 (USDT)</label>
+                                <input type="number" id="ribaoMinUsdt" min="0" value="10">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label>结息时间</label>
+                            <input type="text" id="ribaoSettleTime" value="每日19:00">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8e8e8;">
+                        <button class="btn btn-primary" onclick="saveAllSettings()" style="padding: 8px 24px; font-size: 14px;">✓ 保存所有设置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作日志 -->
+            <div id="logs" class="page hidden">
+                <h2 style="margin-bottom: 24px;">操作日志</h2>
+                <div class="card">
+                    <div style="margin-bottom: 16px;">
+                        <input type="text" id="logSearch" placeholder="搜索日志..." style="padding: 8px 12px; width: 300px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                        <button class="btn btn-primary" onclick="searchLogs()" style="margin-left: 8px;">搜索</button>
+                    </div>
+                    <table id="logTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>操作类型</th>
+                                <th>操作人</th>
+                                <th>操作内容</th>
+                                <th>操作时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody">
+                            <tr><td colspan="5" style="text-align: center;">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建项目模态框 -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">新建项目</h2>
+            <form id="projectForm">
+                <input type="hidden" id="projectId" name="id">
+
+                <!-- 基础信息 -->
+                <div style="margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e8e8e8;">
+                    <h3>基础信息</h3>
+                    <div class="form-group">
+                        <label>项目名称 *</label>
+                        <input type="text" id="projectName" name="name" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>年化收益率 (%) *</label>
+                            <input type="number" id="annualRate" name="annual_rate" step="0.1" min="0" max="50" required>
+                        </div>
+                        <div class="form-group">
+                            <label>投资期限 (天) *</label>
+                            <input type="number" id="duration" name="duration" min="1" max="365" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>项目描述</label>
+                        <textarea id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <!-- 币种和额度设置 -->
+                <div style="margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e8e8e8;">
+                    <h3>币种和额度设置</h3>
+                    <div class="form-group">
+                        <label>支持的币种 *</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="currencyCNY" name="currencies[]" value="CNY" checked>
+                                人民币 (CNY)
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="currencyUSDT" name="currencies[]" value="USDT">
+                                USDT
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>CNY总额度</label>
+                            <input type="number" id="totalAmountCNY" name="total_amount_cny" step="1000" min="0" placeholder="CNY总额度">
+                        </div>
+                        <div class="form-group">
+                            <label>USDT总额度</label>
+                            <input type="number" id="totalAmountUSDT" name="total_amount_usdt" step="100" min="0" placeholder="USDT总额度">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>CNY最低投资额</label>
+                            <input type="number" id="minInvestmentCNY" name="min_investment_cny" step="100" min="0" placeholder="CNY最低投资">
+                        </div>
+                        <div class="form-group">
+                            <label>USDT最低投资额</label>
+                            <input type="number" id="minInvestmentUSDT" name="min_investment_usdt" step="10" min="0" placeholder="USDT最低投资">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 返利设置 -->
+                <div style="margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e8e8e8;">
+                    <h3>返利设置</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>CNY返利比例 (%)</label>
+                            <input type="number" id="rebateCNY" name="rebate_cny" step="0.1" min="0" max="100" value="0" placeholder="CNY返利比例">
+                        </div>
+                        <div class="form-group">
+                            <label>USDT返利比例 (%)</label>
+                            <input type="number" id="rebateUSDT" name="rebate_usdt" step="0.1" min="0" max="100" value="0" placeholder="USDT返利比例">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 加息设置 -->
+                <div style="margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e8e8e8;">
+                    <h3>加息设置</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>VIP加息 (%)</label>
+                            <input type="number" id="vipBonus" name="vip_bonus" step="0.01" min="0" max="10" value="0" placeholder="VIP额外加息">
+                            <small style="color: #8c8c8c; font-size: 12px; display: block; margin-top: 4px;">在年化收益率基础上额外增加</small>
+                        </div>
+                        <div class="form-group">
+                            <label>活动加息 (%)</label>
+                            <input type="number" id="activityBonus" name="activity_bonus" step="0.01" min="0" max="10" value="0" placeholder="活动额外加息">
+                            <small style="color: #8c8c8c; font-size: 12px; display: block; margin-top: 4px;">活动期间额外加息</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 购买限制 -->
+                <div style="margin-bottom: 28px;">
+                    <h3>购买限制</h3>
+                    <div class="form-group">
+                        <label>最低VIP等级要求</label>
+                        <select id="minVipLevel" name="min_vip_level">
+                            <option value="0">VIP0 - 无限制</option>
+                            <option value="1">VIP1 - 入门投资者</option>
+                            <option value="2">VIP2 - 中级投资者</option>
+                            <option value="3">VIP3 - 高级投资者</option>
+                            <option value="4">VIP4 - 资深投资者</option>
+                            <option value="5">VIP5 - 黄金投资者</option>
+                            <option value="6">VIP6 - 铂金投资者</option>
+                            <option value="7">VIP7 - 钻石投资者</option>
+                            <option value="8">VIP8 - 至尊投资者</option>
+                        </select>
+                        <small style="color: #8c8c8c; font-size: 12px; display: block; margin-top: 4px;">只有达到此VIP等级的用户才能购买</small>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" class="btn" onclick="closeProjectModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存项目</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 实名认证详情模态框 -->
+    <div id="kycDetailModal" class="modal">
+        <div class="modal-content" style="width: 700px;">
+            <h2>实名认证详情</h2>
+            <div id="kycDetailContent" style="padding: 20px 0;">
+                <div style="text-align: center; padding: 40px;">加载中...</div>
+            </div>
+            <div class="modal-footer" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 12px;">
+                <button type="button" class="btn" onclick="closeKycDetailModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8082/api';
+
+        // 页面切换
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(pageId).classList.remove('hidden');
+            event.target.classList.add('active');
+
+            // 加载对应数据
+            if (pageId === 'users') loadUsers();
+            if (pageId === 'projects') loadProjects();
+            if (pageId === 'dashboard') loadDashboard();
+            if (pageId === 'finance') loadFinance();
+            if (pageId === 'kyc') loadKycList('pending');
+            if (pageId === 'settings') loadSystemSettings();
+            if (pageId === 'logs') loadLogs();
+        }
+
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/user/list`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('userTableBody');
+                    const kycStatusMap = {
+                        'unverified': '<span style="color: #8c8c8c;">未认证</span>',
+                        'pending': '<span style="color: #faad14;">待审核</span>',
+                        'verified': '<span style="color: #52c41a;">已认证</span>',
+                        'rejected': '<span style="color: #ff4d4f;">已拒绝</span>'
+                    };
+                    tbody.innerHTML = data.data.map(user => `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>VIP${user.vip_level || 0}</td>
+                            <td>${kycStatusMap[user.kyc_status] || kycStatusMap['unverified']}</td>
+                            <td>¥${(user.balance_cny || 0).toLocaleString()}</td>
+                            <td>$${(user.balance_usdt || 0).toLocaleString()}</td>
+                            <td>¥${(user.total_investment || 0).toLocaleString()}</td>
+                            <td>${user.status === 'active' || user.status === 1 ? '正常' : '冻结'}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="viewUserDetail(${user.id})" style="margin-right: 4px;">详情</button>
+                                <button class="btn btn-primary" onclick="viewUserWalletLogs(${user.id})" style="margin-right: 4px;">资金流水</button>
+                                ${user.status === 'active' || user.status === 1
+                                    ? `<button class="btn btn-danger" onclick="freezeUser(${user.id})">冻结</button>`
+                                    : `<button class="btn btn-primary" onclick="unfreezeUser(${user.id})">解冻</button>`
+                                }
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载用户失败:', error);
+            }
+        }
+
+        // 加载项目列表
+        async function loadProjects() {
+            try {
+                const res = await fetch(`${API_BASE}/project/list`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('projectTableBody');
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">暂无项目</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.data.map(project => {
+                        // 格式化币种显示
+                        const currencies = project.currencies || [project.currency || 'CNY'];
+                        const currencyText = currencies.length > 1 ? 'CNY+USDT' : currencies[0];
+
+                        // 计算总额度和已售
+                        const totalCNY = project.total_amount_cny || 0;
+                        const totalUSDT = project.total_amount_usdt || 0;
+                        const soldCNY = project.sold_amount_cny || 0;
+                        const soldUSDT = project.sold_amount_usdt || 0;
+                        const totalAmount = totalCNY + totalUSDT;
+                        const soldAmount = soldCNY + soldUSDT;
+                        const remainAmount = totalAmount - soldAmount;
+
+                        // 状态显示
+                        const statusMap = {
+                            'draft': '<span style="color: #8c8c8c;">草稿</span>',
+                            'running': '<span style="color: #52c41a;">进行中</span>',
+                            'paused': '<span style="color: #faad14;">已暂停</span>',
+                            'completed': '<span style="color: #1890ff;">已完成</span>'
+                        };
+                        const statusText = statusMap[project.status] || project.status;
+
+                        // 操作按钮
+                        let actionButtons = `<button class="btn btn-primary" onclick="editProject(${project.id})" style="margin-right: 4px;">编辑</button>`;
+                        if (project.status === 'running') {
+                            actionButtons += `<button class="btn btn-danger" onclick="pauseProject(${project.id})" style="margin-right: 4px;">暂停</button>`;
+                        } else if (project.status === 'paused') {
+                            actionButtons += `<button class="btn btn-primary" onclick="resumeProject(${project.id})" style="margin-right: 4px;">恢复</button>`;
+                        }
+                        if (project.status === 'draft') {
+                            actionButtons += `<button class="btn btn-primary" onclick="startProject(${project.id})" style="margin-right: 4px;">发布</button>`;
+                        }
+
+                        return `
+                            <tr>
+                                <td>${project.id}</td>
+                                <td>${project.name}</td>
+                                <td>${project.annual_rate}%</td>
+                                <td>${project.duration}</td>
+                                <td>${currencyText}</td>
+                                <td>${totalCNY > 0 ? '¥' + totalCNY.toLocaleString() : ''} ${totalUSDT > 0 ? '$' + totalUSDT.toLocaleString() : ''}</td>
+                                <td>${soldCNY > 0 ? '¥' + soldCNY.toLocaleString() : ''} ${soldUSDT > 0 ? '$' + soldUSDT.toLocaleString() : ''}</td>
+                                <td>${remainAmount > 0 ? (totalCNY > 0 ? '¥' : '$') + remainAmount.toLocaleString() : '0'}</td>
+                                <td>${statusText}</td>
+                                <td>${actionButtons}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('加载项目失败:', error);
+                document.getElementById('projectTableBody').innerHTML = '<tr><td colspan="10" style="text-align: center; color: #ff4d4f;">加载失败，请刷新重试</td></tr>';
+            }
+        }
+
+        // 加载数据概览
+        async function loadDashboard() {
+            try {
+                const res = await fetch(`${API_BASE}/admin/stats`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const stats = data.data;
+                    document.getElementById('totalUsers').textContent = stats.total_users || 0;
+                    document.getElementById('activeUsers').textContent = stats.active_users || 0;
+                    document.getElementById('totalInvestment').textContent = '¥' + (stats.total_investment || 0).toLocaleString();
+                    document.getElementById('todayRecharge').textContent = '¥' + (stats.today_recharge || 0).toLocaleString();
+                    document.getElementById('todayWithdraw').textContent = '¥' + (stats.today_withdraw || 0).toLocaleString();
+                    document.getElementById('pendingKyc').textContent = stats.pending_kyc || 0;
+                    document.getElementById('pendingRecharge').textContent = stats.pending_recharge || 0;
+                    document.getElementById('pendingWithdraw').textContent = stats.pending_withdraw || 0;
+                    document.getElementById('totalRevenue').textContent = '¥' + (stats.total_revenue || 0).toLocaleString();
+                } else {
+                    // 如果接口失败，使用旧方法
+                    const [usersRes, projectsRes] = await Promise.all([
+                        fetch(`${API_BASE}/user/list`),
+                        fetch(`${API_BASE}/project/list`)
+                    ]);
+                    const usersData = await usersRes.json();
+                    const projectsData = await projectsRes.json();
+                    if (usersData.code === 1) {
+                        document.getElementById('totalUsers').textContent = usersData.data.length;
+                    }
+                }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+
+        // 冻结用户
+        async function freezeUser(userId) {
+            if (!confirm('确定要冻结该用户吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/user/freeze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('用户已冻结');
+                    loadUsers();
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 解冻用户
+        async function unfreezeUser(userId) {
+            if (!confirm('确定要解冻该用户吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/user/unfreeze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('用户已解冻');
+                    loadUsers();
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 创建项目
+        function createProject() {
+            document.getElementById('modalTitle').textContent = '新建项目';
+            document.getElementById('projectForm').reset();
+            document.getElementById('projectId').value = '';
+            document.getElementById('projectModal').style.display = 'block';
+        }
+
+        // 编辑项目
+        async function editProject(projectId) {
+            document.getElementById('modalTitle').textContent = '编辑项目';
+            document.getElementById('projectId').value = projectId;
+
+            try {
+                const res = await fetch(`${API_BASE}/project/detail?id=${projectId}`);
+                const result = await res.json();
+                if (result.code === 1) {
+                    const project = result.data;
+
+                    // 填充表单
+                    document.getElementById('projectName').value = project.name || '';
+                    document.getElementById('annualRate').value = project.annual_rate || 0;
+                    document.getElementById('duration').value = project.duration || 0;
+                    document.getElementById('description').value = project.description || '';
+
+                    // 币种选择
+                    const currencies = project.currencies || [project.currency || 'CNY'];
+                    document.getElementById('currencyCNY').checked = currencies.includes('CNY');
+                    document.getElementById('currencyUSDT').checked = currencies.includes('USDT');
+
+                    // 额度设置
+                    document.getElementById('totalAmountCNY').value = project.total_amount_cny || 0;
+                    document.getElementById('totalAmountUSDT').value = project.total_amount_usdt || 0;
+                    document.getElementById('minInvestmentCNY').value = project.min_investment_cny || 0;
+                    document.getElementById('minInvestmentUSDT').value = project.min_investment_usdt || 0;
+
+                    // 返利设置
+                    document.getElementById('rebateCNY').value = project.rebate_cny || 0;
+                    document.getElementById('rebateUSDT').value = project.rebate_usdt || 0;
+
+                    // 加息设置
+                    document.getElementById('vipBonus').value = project.vip_bonus || 0;
+                    document.getElementById('activityBonus').value = project.activity_bonus || 0;
+
+                    // VIP限制
+                    document.getElementById('minVipLevel').value = project.min_vip_level || 0;
+
+                    // 显示模态框
+                    document.getElementById('projectModal').style.display = 'block';
+                } else {
+                    alert('加载项目数据失败：' + result.msg);
+                }
+            } catch (error) {
+                alert('加载项目数据失败：' + error.message);
+            }
+        }
+
+        // 关闭模态框
+        function closeProjectModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        // 暂停项目
+        async function pauseProject(projectId) {
+            if (!confirm('确定要暂停该项目吗？暂停后用户将无法继续投资。')) return;
+            try {
+                const res = await fetch(`${API_BASE}/project/pause`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: projectId })
+                });
+                const result = await res.json();
+                if (result.code === 1) {
+                    alert('项目已暂停');
+                    loadProjects();
+                } else {
+                    alert('操作失败：' + result.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 恢复项目
+        async function resumeProject(projectId) {
+            if (!confirm('确定要恢复该项目吗？恢复后用户可以继续投资。')) return;
+            try {
+                const res = await fetch(`${API_BASE}/project/resume`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: projectId })
+                });
+                const result = await res.json();
+                if (result.code === 1) {
+                    alert('项目已恢复');
+                    loadProjects();
+                } else {
+                    alert('操作失败：' + result.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 发布项目（将草稿状态改为进行中）
+        async function startProject(projectId) {
+            if (!confirm('确定要发布该项目吗？发布后项目将开始接受投资。')) return;
+            try {
+                const res = await fetch(`${API_BASE}/project/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: projectId })
+                });
+                const result = await res.json();
+                if (result.code === 1) {
+                    alert('项目已发布');
+                    loadProjects();
+                } else {
+                    alert('操作失败：' + result.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 提交项目表单
+        document.getElementById('projectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // 获取选中的币种
+            const currencies = [];
+            if (document.getElementById('currencyCNY').checked) currencies.push('CNY');
+            if (document.getElementById('currencyUSDT').checked) currencies.push('USDT');
+
+            if (currencies.length === 0) {
+                alert('请至少选择一种币种！');
+                return;
+            }
+
+            // 构建数据对象
+            const data = {
+                id: document.getElementById('projectId').value || null,
+                name: document.getElementById('projectName').value,
+                annual_rate: parseFloat(document.getElementById('annualRate').value),
+                duration: parseInt(document.getElementById('duration').value),
+                description: document.getElementById('description').value || '',
+                currencies: currencies,
+                total_amount_cny: parseFloat(document.getElementById('totalAmountCNY').value) || 0,
+                total_amount_usdt: parseFloat(document.getElementById('totalAmountUSDT').value) || 0,
+                min_investment_cny: parseFloat(document.getElementById('minInvestmentCNY').value) || 0,
+                min_investment_usdt: parseFloat(document.getElementById('minInvestmentUSDT').value) || 0,
+                rebate_cny: parseFloat(document.getElementById('rebateCNY').value) || 0,
+                rebate_usdt: parseFloat(document.getElementById('rebateUSDT').value) || 0,
+                vip_bonus: parseFloat(document.getElementById('vipBonus').value) || 0,
+                activity_bonus: parseFloat(document.getElementById('activityBonus').value) || 0,
+                min_vip_level: parseInt(document.getElementById('minVipLevel').value) || 0
+            };
+
+            const projectId = data.id;
+            const url = projectId ? `${API_BASE}/project/update` : `${API_BASE}/project/create`;
+            const method = projectId ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.code === 1) {
+                    alert('保存成功！');
+                    closeProjectModal();
+                    loadProjects();
+                } else {
+                    alert('保存失败：' + result.msg);
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        });
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const projectModal = document.getElementById('projectModal');
+            const kycModal = document.getElementById('kycDetailModal');
+            if (event.target == projectModal) {
+                closeProjectModal();
+            }
+            if (event.target == kycModal) {
+                closeKycDetailModal();
+            }
+        }
+
+        function logout() {
+            if (confirm('确定要退出吗？')) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 加载财务管理数据
+        async function loadFinance() {
+            await loadRecharges();
+            await loadWithdraws();
+        }
+
+        // 加载实名认证审核列表
+        async function loadKycList(status = 'pending') {
+            try {
+                const res = await fetch(`${API_BASE}/kyc/list?status=${status}`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('kycTableBody');
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">暂无数据</td></tr>';
+                    } else {
+                        const statusMap = {
+                            'pending': '<span style="color: #faad14;">待审核</span>',
+                            'approved': '<span style="color: #52c41a;">已通过</span>',
+                            'rejected': '<span style="color: #ff4d4f;">已拒绝</span>'
+                        };
+                        tbody.innerHTML = data.data.map(kyc => {
+                            const idCardMasked = kyc.id_card ? kyc.id_card.substring(0, 6) + '****' + kyc.id_card.substring(14) : '';
+                            let actions = '';
+                            if (status === 'pending') {
+                                actions = `
+                                    <button class="btn btn-primary" onclick="viewKycDetail(${kyc.id})" style="margin-right: 4px;">查看</button>
+                                    <button class="btn btn-primary" onclick="approveKyc(${kyc.id})" style="margin-right: 4px;">通过</button>
+                                    <button class="btn btn-danger" onclick="rejectKyc(${kyc.id})">拒绝</button>
+                                `;
+                            } else {
+                                actions = `<button class="btn btn-primary" onclick="viewKycDetail(${kyc.id})">查看详情</button>`;
+                            }
+                            return `
+                                <tr>
+                                    <td>${kyc.id}</td>
+                                    <td>${kyc.user_id}</td>
+                                    <td>${kyc.username || '未知'}</td>
+                                    <td>${kyc.realname || ''}</td>
+                                    <td>${idCardMasked}</td>
+                                    <td>${kyc.create_time || ''}</td>
+                                    <td>${statusMap[status] || status}</td>
+                                    <td>${actions}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('加载实名认证列表失败:', error);
+                document.getElementById('kycTableBody').innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ff4d4f;">加载失败，请刷新重试</td></tr>';
+            }
+        }
+
+        // 查看实名认证详情
+        async function viewKycDetail(kycId) {
+            try {
+                const res = await fetch(`${API_BASE}/kyc/detail?id=${kycId}`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const kyc = data.data;
+                    const content = document.getElementById('kycDetailContent');
+                    content.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                            <div>
+                                <div style="margin-bottom: 12px;"><strong>用户ID:</strong> ${kyc.user_id}</div>
+                                <div style="margin-bottom: 12px;"><strong>用户名:</strong> ${kyc.username || '未知'}</div>
+                                <div style="margin-bottom: 12px;"><strong>真实姓名:</strong> ${kyc.realname || ''}</div>
+                                <div style="margin-bottom: 12px;"><strong>身份证号:</strong> ${kyc.id_card || ''}</div>
+                                <div style="margin-bottom: 12px;"><strong>提交时间:</strong> ${kyc.create_time || ''}</div>
+                                ${kyc.reject_reason ? `<div style="margin-bottom: 12px; color: #ff4d4f;"><strong>拒绝原因:</strong> ${kyc.reject_reason}</div>` : ''}
+                            </div>
+                            <div>
+                                ${kyc.face_photo ? `
+                                    <div style="margin-bottom: 16px;">
+                                        <strong>人脸照片:</strong>
+                                        <div style="margin-top: 8px;">
+                                            <img src="${kyc.face_photo}" style="max-width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                        </div>
+                                    </div>
+                                ` : '<div style="color: #8c8c8c;">未上传人脸照片</div>'}
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <strong>身份证正面:</strong>
+                                ${kyc.id_card_front ? `
+                                    <div style="margin-top: 8px;">
+                                        <img src="${kyc.id_card_front}" style="max-width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    </div>
+                                ` : '<div style="margin-top: 8px; color: #8c8c8c;">未上传</div>'}
+                            </div>
+                            <div>
+                                <strong>身份证反面:</strong>
+                                ${kyc.id_card_back ? `
+                                    <div style="margin-top: 8px;">
+                                        <img src="${kyc.id_card_back}" style="max-width: 100%; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    </div>
+                                ` : '<div style="margin-top: 8px; color: #8c8c8c;">未上传</div>'}
+                            </div>
+                        </div>
+                        ${kyc.status === 'pending' ? `
+                            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: center; gap: 12px;">
+                                <button class="btn btn-primary" onclick="approveKycFromDetail(${kyc.id})">审核通过</button>
+                                <button class="btn btn-danger" onclick="rejectKycFromDetail(${kyc.id})">审核拒绝</button>
+                            </div>
+                        ` : ''}
+                    `;
+                    document.getElementById('kycDetailModal').style.display = 'block';
+                } else {
+                    alert('加载详情失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('加载详情失败：' + error.message);
+            }
+        }
+
+        // 关闭详情模态框
+        function closeKycDetailModal() {
+            document.getElementById('kycDetailModal').style.display = 'none';
+        }
+
+        // 从详情页审核通过
+        async function approveKycFromDetail(kycId) {
+            if (!confirm('确定要通过该实名认证吗？')) return;
+            await approveKyc(kycId);
+            closeKycDetailModal();
+        }
+
+        // 从详情页审核拒绝
+        async function rejectKycFromDetail(kycId) {
+            const reason = prompt('请输入拒绝原因：');
+            if (!reason) return;
+            await rejectKyc(kycId, reason);
+            closeKycDetailModal();
+        }
+
+        // 审核通过实名认证
+        async function approveKyc(kycId) {
+            if (!confirm('确定要通过该实名认证吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/kyc/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: kycId })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('审核通过');
+                    loadKycList('pending');
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 审核拒绝实名认证
+        async function rejectKyc(kycId, reason = null) {
+            if (!reason) {
+                reason = prompt('请输入拒绝原因：');
+                if (!reason) return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/kyc/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: kycId, reason: reason })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('已拒绝');
+                    loadKycList('pending');
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 加载充值列表
+        async function loadRecharges() {
+            try {
+                const res = await fetch(`${API_BASE}/finance/recharge/list?status=pending`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('rechargeTableBody');
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">暂无待审核充值</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.data.map(r => {
+                            const paymentMethod = r.payment_method || '未知';
+                            const needsReview = paymentMethod.includes('银行卡') || paymentMethod.includes('转账');
+                            const statusText = needsReview ? '<span style="color: #faad14;">待审核</span>' : '<span style="color: #52c41a;">自动到账</span>';
+
+                            let actionButtons = '';
+                            if (needsReview) {
+                                actionButtons = `
+                                    <button class="btn btn-primary" onclick="viewRechargeDetail(${r.id})" style="margin-right: 4px;">查看凭证</button>
+                                    <button class="btn btn-primary" onclick="approveRecharge(${r.id})" style="margin-right: 4px;">通过</button>
+                                    <button class="btn btn-danger" onclick="rejectRecharge(${r.id})">拒绝</button>
+                                `;
+                            } else {
+                                actionButtons = '<span style="color: #999;">自动处理</span>';
+                            }
+
+                            return `
+                                <tr>
+                                    <td>${r.id}</td>
+                                    <td>${r.username || '未知'} (ID: ${r.user_id})</td>
+                                    <td>${paymentMethod}</td>
+                                    <td>${r.currency === 'CNY' ? '¥' : '$'}${r.amount.toLocaleString()}</td>
+                                    <td>${r.currency}</td>
+                                    <td style="font-size: 12px; color: #999;">${r.transaction_id || '-'}</td>
+                                    <td>${r.create_time || '-'}</td>
+                                    <td>${statusText}</td>
+                                    <td>${actionButtons}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('加载充值列表失败:', error);
+                document.getElementById('rechargeTableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; color: #ff4d4f;">加载失败，请刷新重试</td></tr>';
+            }
+        }
+
+        // 加载提现列表
+        async function loadWithdraws() {
+            try {
+                const res = await fetch(`${API_BASE}/finance/withdraw/list?status=pending`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('withdrawTableBody');
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">暂无待审核提现</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.data.map(w => {
+                            const withdrawMethod = w.withdraw_method || w.payment_method || '银行卡';
+                            const accountInfo = w.account_number || w.bank_account || w.usdt_address || '-';
+
+                            return `
+                                <tr>
+                                    <td>${w.id}</td>
+                                    <td>${w.username || '未知'} (ID: ${w.user_id})</td>
+                                    <td>${withdrawMethod}</td>
+                                    <td>${w.currency === 'CNY' ? '¥' : '$'}${w.amount.toLocaleString()}</td>
+                                    <td>${w.currency}</td>
+                                    <td style="font-size: 12px; color: #666; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${accountInfo}</td>
+                                    <td>${w.create_time || '-'}</td>
+                                    <td><span style="color: #faad14;">待审核</span></td>
+                                    <td>
+                                        <button class="btn btn-primary" onclick="viewWithdrawDetail(${w.id})" style="margin-right: 4px;">详情</button>
+                                        <button class="btn btn-primary" onclick="approveWithdraw(${w.id})" style="margin-right: 4px;">通过</button>
+                                        <button class="btn btn-danger" onclick="rejectWithdraw(${w.id})">拒绝</button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('加载提现列表失败:', error);
+                document.getElementById('withdrawTableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; color: #ff4d4f;">加载失败，请刷新重试</td></tr>';
+            }
+        }
+
+        // 审核通过提现
+        async function approveWithdraw(withdrawId) {
+            if (!confirm('确定要通过该提现申请吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/finance/withdraw/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ withdraw_id: withdrawId })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('提现审核通过');
+                    loadWithdraws();
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 拒绝提现
+        async function rejectWithdraw(withdrawId) {
+            const reason = prompt('请输入拒绝原因：');
+            if (!reason) return;
+            try {
+                const res = await fetch(`${API_BASE}/finance/withdraw/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ withdraw_id: withdrawId, reason: reason })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('提现已拒绝');
+                    loadWithdraws();
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 查看充值详情（含凭证）
+        async function viewRechargeDetail(rechargeId) {
+            try {
+                const res = await fetch(`${API_BASE}/finance/recharge/detail?id=${rechargeId}`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const r = data.data;
+                    const paymentMethod = r.payment_method || '未知';
+                    const needsReview = paymentMethod.includes('银行卡') || paymentMethod.includes('转账');
+
+                    let voucherHtml = '';
+                    if (r.voucher_image || r.proof_image) {
+                        const imageUrl = r.voucher_image || r.proof_image;
+                        voucherHtml = `
+                            <div style="margin-bottom: 16px;">
+                                <strong>转账凭证：</strong>
+                                <div style="margin-top: 8px;">
+                                    <img src="${imageUrl}" style="max-width: 100%; max-height: 400px; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" alt="转账凭证">
+                                </div>
+                            </div>
+                        `;
+                    } else if (needsReview) {
+                        voucherHtml = '<div style="color: #ff4d4f; margin-bottom: 16px;">⚠️ 未上传转账凭证</div>';
+                    }
+
+                    const detailHtml = `
+                        <div style="padding: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                                <div>
+                                    <div style="margin-bottom: 12px;"><strong>充值ID:</strong> ${r.id}</div>
+                                    <div style="margin-bottom: 12px;"><strong>用户:</strong> ${r.username || '未知'} (ID: ${r.user_id})</div>
+                                    <div style="margin-bottom: 12px;"><strong>充值方式:</strong> ${paymentMethod}</div>
+                                    <div style="margin-bottom: 12px;"><strong>金额:</strong> ${r.currency === 'CNY' ? '¥' : '$'}${r.amount.toLocaleString()}</div>
+                                    <div style="margin-bottom: 12px;"><strong>币种:</strong> ${r.currency}</div>
+                                </div>
+                                <div>
+                                    <div style="margin-bottom: 12px;"><strong>交易单号:</strong> ${r.transaction_id || '-'}</div>
+                                    <div style="margin-bottom: 12px;"><strong>提交时间:</strong> ${r.create_time || '-'}</div>
+                                    <div style="margin-bottom: 12px;"><strong>状态:</strong> ${r.status === 'pending' ? '待审核' : r.status === 'approved' ? '已通过' : '已拒绝'}</div>
+                                    ${r.reject_reason ? `<div style="margin-bottom: 12px; color: #ff4d4f;"><strong>拒绝原因:</strong> ${r.reject_reason}</div>` : ''}
+                                </div>
+                            </div>
+                            ${voucherHtml}
+                            ${needsReview && r.status === 'pending' ? `
+                                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: center; gap: 12px;">
+                                    <button class="btn btn-primary" onclick="approveRechargeFromDetail(${r.id})">审核通过</button>
+                                    <button class="btn btn-danger" onclick="rejectRechargeFromDetail(${r.id})">审核拒绝</button>
+                                </div>
+                            ` : ''}
+                            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end;">
+                                <button class="btn" onclick="closeRechargeDetailModal()">关闭</button>
+                            </div>
+                        </div>
+                    `;
+                    showModal('充值详情', detailHtml);
+                } else {
+                    alert('加载充值详情失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('加载充值详情失败：' + error.message);
+            }
+        }
+
+        // 从详情页审核通过
+        async function approveRechargeFromDetail(rechargeId) {
+            if (!confirm('确定要通过该充值申请吗？')) return;
+            await approveRecharge(rechargeId);
+            closeRechargeDetailModal();
+        }
+
+        // 从详情页审核拒绝
+        async function rejectRechargeFromDetail(rechargeId) {
+            const reason = prompt('请输入拒绝原因：');
+            if (!reason) return;
+            await rejectRecharge(rechargeId, reason);
+            closeRechargeDetailModal();
+        }
+
+        // 关闭充值详情模态框
+        function closeRechargeDetailModal() {
+            closeUserDetailModal();
+        }
+
+        // 审核通过充值
+        async function approveRecharge(rechargeId) {
+            if (!confirm('确定要通过该充值申请吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/finance/recharge/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recharge_id: rechargeId })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('充值审核通过');
+                    loadRecharges();
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 审核拒绝充值
+        async function rejectRecharge(rechargeId, reason = null) {
+            if (!reason) {
+                reason = prompt('请输入拒绝原因：');
+                if (!reason) return;
+            }
+            try {
+                const res = await fetch(`${API_BASE}/finance/recharge/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recharge_id: rechargeId, reason: reason })
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('充值已拒绝');
+                    loadRecharges();
+                } else {
+                    alert('操作失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('操作失败：' + error.message);
+            }
+        }
+
+        // 查看提现详情
+        async function viewWithdrawDetail(withdrawId) {
+            try {
+                const res = await fetch(`${API_BASE}/finance/withdraw/detail?id=${withdrawId}`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const w = data.data;
+                    const detailHtml = `
+                        <div style="padding: 20px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                                <div>
+                                    <div style="margin-bottom: 12px;"><strong>提现ID:</strong> ${w.id}</div>
+                                    <div style="margin-bottom: 12px;"><strong>用户:</strong> ${w.username || '未知'} (ID: ${w.user_id})</div>
+                                    <div style="margin-bottom: 12px;"><strong>提现方式:</strong> ${w.withdraw_method || w.payment_method || '银行卡'}</div>
+                                    <div style="margin-bottom: 12px;"><strong>金额:</strong> ${w.currency === 'CNY' ? '¥' : '$'}${w.amount.toLocaleString()}</div>
+                                    <div style="margin-bottom: 12px;"><strong>币种:</strong> ${w.currency}</div>
+                                </div>
+                                <div>
+                                    <div style="margin-bottom: 12px;"><strong>收款账户:</strong> ${w.account_number || w.bank_account || w.usdt_address || '-'}</div>
+                                    <div style="margin-bottom: 12px;"><strong>申请时间:</strong> ${w.create_time || '-'}</div>
+                                    <div style="margin-bottom: 12px;"><strong>状态:</strong> ${w.status === 'pending' ? '待审核' : w.status === 'approved' ? '已通过' : '已拒绝'}</div>
+                                    ${w.reject_reason ? `<div style="margin-bottom: 12px; color: #ff4d4f;"><strong>拒绝原因:</strong> ${w.reject_reason}</div>` : ''}
+                                </div>
+                            </div>
+                            ${w.status === 'pending' ? `
+                                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: center; gap: 12px;">
+                                    <button class="btn btn-primary" onclick="approveWithdraw(${w.id}); closeRechargeDetailModal();">审核通过</button>
+                                    <button class="btn btn-danger" onclick="rejectWithdraw(${w.id}); closeRechargeDetailModal();">审核拒绝</button>
+                                </div>
+                            ` : ''}
+                            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end;">
+                                <button class="btn" onclick="closeRechargeDetailModal()">关闭</button>
+                            </div>
+                        </div>
+                    `;
+                    showModal('提现详情', detailHtml);
+                } else {
+                    alert('加载提现详情失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('加载提现详情失败：' + error.message);
+            }
+        }
+
+        // 加载VIP配置
+        async function loadVipConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/vip/config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('vipTableBody');
+                    tbody.innerHTML = data.data.map(vip => `
+                        <tr>
+                            <td>VIP${vip.level}</td>
+                            <td>${vip.name}</td>
+                            <td>¥${(vip.min_investment || 0).toLocaleString()}</td>
+                            <td>${((vip.interest_bonus || 0) * 100).toFixed(2)}%</td>
+                            <td>${vip.direct_rebate || 0}%</td>
+                            <td>${vip.team_rebate || 0}%</td>
+                            <td>${vip.sign_points || 0}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="editVipConfig(${vip.level})">编辑</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载VIP配置失败:', error);
+            }
+        }
+
+        // 保存所有VIP配置
+        async function saveAllVipConfig() {
+            if (!confirm('确定要保存所有VIP配置吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/vip/config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const res2 = await fetch(`${API_BASE}/vip/update-config`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ configs: data.data })
+                    });
+                    const result = await res2.json();
+                    if (result.code === 1) {
+                        alert('VIP配置保存成功');
+                    } else {
+                        alert('保存失败：' + result.msg);
+                    }
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        }
+
+        // 编辑VIP配置
+        async function editVipConfig(level) {
+            try {
+                const res = await fetch(`${API_BASE}/vip/config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const vip = data.data.find(v => v.level === level);
+                    if (!vip) {
+                        alert('未找到VIP' + level + '配置');
+                        return;
+                    }
+                    const formHtml = `
+                        <div style="padding: 20px; max-height: 80vh; overflow-y: auto;">
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>VIP名称:</strong></label>
+                                <input type="text" id="vipName" value="${vip.name}" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>累计投资额 (¥):</strong> <span style="color: #999; font-size: 12px;">达到该等级需要累计投资的总金额</span></label>
+                                <input type="number" id="vipMinInvestment" value="${vip.min_investment || 0}" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>额外加息 (%):</strong> <span style="color: #999; font-size: 12px;">购买项目时可享受的额外年化收益率加成</span></label>
+                                <input type="number" id="vipInterestBonus" value="${((vip.interest_bonus || 0) * 100).toFixed(2)}" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>一级返利 (%):</strong> <span style="color: #999; font-size: 12px;">邀请好友投资，可获得的一级返利百分比</span></label>
+                                <input type="number" id="vipDirectRebate" value="${vip.direct_rebate || 0}" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>二级返利 (%):</strong> <span style="color: #999; font-size: 12px;">邀请好友的邀请好友投资，可获得的二级返利百分比</span></label>
+                                <input type="number" id="vipTeamRebate" value="${vip.team_rebate || 0}" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>签到积分:</strong> <span style="color: #999; font-size: 12px;">每天签到可获得的固定积分</span></label>
+                                <input type="number" id="vipSignPoints" value="${vip.sign_points || 0}" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>描述:</strong></label>
+                                <textarea id="vipDescription" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; min-height: 80px; background: white; color: #333;">${vip.description || ''}</textarea>
+                            </div>
+                            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 12px;">
+                                <button class="btn" onclick="closeVipEditModal()">取消</button>
+                                <button class="btn btn-primary" onclick="saveVipConfig(${level})">保存</button>
+                            </div>
+                        </div>
+                    `;
+                    showModal('编辑VIP' + level + '配置', formHtml);
+                }
+            } catch (error) {
+                alert('加载VIP配置失败：' + error.message);
+            }
+        }
+
+        // 保存VIP配置
+        async function saveVipConfig(level) {
+            const config = {
+                level: level,
+                name: document.getElementById('vipName').value,
+                min_investment: parseFloat(document.getElementById('vipMinInvestment').value) || 0,
+                interest_bonus: parseFloat(document.getElementById('vipInterestBonus').value) / 100 || 0,
+                direct_rebate: parseFloat(document.getElementById('vipDirectRebate').value) || 0,
+                team_rebate: parseFloat(document.getElementById('vipTeamRebate').value) || 0,
+                sign_points: parseInt(document.getElementById('vipSignPoints').value) || 0,
+                description: document.getElementById('vipDescription').value
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/vip/config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const configs = data.data.map(v => {
+                        if (v.level === level) {
+                            return config;
+                        }
+                        return v;
+                    });
+                    const res2 = await fetch(`${API_BASE}/vip/update-config`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ configs: configs })
+                    });
+                    const result = await res2.json();
+                    if (result.code === 1) {
+                        alert('VIP配置保存成功');
+                        closeVipEditModal();
+                        loadVipConfig();
+                    } else {
+                        alert('保存失败：' + result.msg);
+                    }
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        }
+
+        // 关闭VIP编辑模态框
+        function closeVipEditModal() {
+            closeUserDetailModal();
+        }
+
+        // 加载团队管理奖配置
+        async function loadTeamRewardConfig() {
+            try {
+                const res = await fetch(`${API_BASE}/team/reward-config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('teamRewardTableBody');
+                    tbody.innerHTML = data.data.map(config => `
+                        <tr>
+                            <td>${config.id}</td>
+                            <td>${config.member_count}人</td>
+                            <td>¥${config.total_investment.toLocaleString()}</td>
+                            <td>${config.reward_points.toLocaleString()}</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="editTeamRewardConfig(${config.id})">编辑</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('加载团队管理奖配置失败:', error);
+            }
+        }
+
+        // 编辑团队管理奖配置
+        async function editTeamRewardConfig(id) {
+            try {
+                const res = await fetch(`${API_BASE}/team/reward-config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const config = data.data.find(c => c.id === id);
+                    if (!config) {
+                        alert('未找到配置');
+                        return;
+                    }
+                    const formHtml = `
+                        <div style="padding: 20px;">
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>下级成员数:</strong></label>
+                                <input type="number" id="teamMemberCount" value="${config.member_count}" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>累计投资 (¥):</strong></label>
+                                <input type="number" id="teamTotalInvestment" value="${config.total_investment}" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px;"><strong>奖励积分:</strong></label>
+                                <input type="number" id="teamRewardPoints" value="${config.reward_points}" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; background: white; color: #333;">
+                            </div>
+                            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 12px;">
+                                <button class="btn" onclick="closeTeamRewardModal()">取消</button>
+                                <button class="btn btn-primary" onclick="saveTeamRewardConfigItem(${id})">保存</button>
+                            </div>
+                        </div>
+                    `;
+                    showModal('编辑团队管理奖配置', formHtml);
+                }
+            } catch (error) {
+                alert('加载配置失败：' + error.message);
+            }
+        }
+
+        // 保存团队管理奖配置项
+        async function saveTeamRewardConfigItem(id) {
+            // 这里应该更新配置并保存
+            alert('保存功能待实现');
+            closeTeamRewardModal();
+        }
+
+        // 保存所有团队管理奖配置
+        async function saveTeamRewardConfig() {
+            if (!confirm('确定要保存所有团队管理奖配置吗？')) return;
+            try {
+                const res = await fetch(`${API_BASE}/team/reward-config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const res2 = await fetch(`${API_BASE}/team/reward-config`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ configs: data.data })
+                    });
+                    const result = await res2.json();
+                    if (result.code === 1) {
+                        alert('团队管理奖配置保存成功');
+                        loadTeamRewardConfig();
+                    } else {
+                        alert('保存失败：' + result.msg);
+                    }
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        }
+
+        // 关闭团队管理奖编辑模态框
+        function closeTeamRewardModal() {
+            closeUserDetailModal();
+        }
+
+        // 系统设置 - 标签切换
+        function switchSettingsTab(tab) {
+            // 隐藏所有面板
+            document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
+            // 移除所有标签的active类
+            document.querySelectorAll('[id^="tab"]').forEach(t => t.classList.remove('btn-primary'));
+            // 显示选中面板
+            const panelId = 'settings' + tab.charAt(0).toUpperCase() + tab.slice(1);
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.remove('hidden');
+                document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('btn-primary');
+            }
+        }
+
+        // 加载系统配置
+        async function loadAllSettings() {
+            try {
+                const res = await fetch(`${API_BASE}/system/config`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const config = data.data;
+
+                    // 汇率
+                    if (config.exchange_rate) {
+                        document.getElementById('exchangeRate').value = config.exchange_rate.usdt_to_cny || 7.2;
+                    }
+
+                    // VIP配置
+                    if (config.vip_config) {
+                        renderVipConfigTable(config.vip_config);
+                    }
+
+                    // 团队奖励配置
+                    if (config.team_reward_config) {
+                        renderTeamRewardTable(config.team_reward_config);
+                    }
+
+                    // 体验金
+                    if (config.trial_money) {
+                        document.getElementById('trialAmountCny').value = config.trial_money.amount_cny || 888;
+                        document.getElementById('trialAmountUsdt').value = config.trial_money.amount_usdt || 123;
+                        document.getElementById('trialDuration').value = config.trial_money.duration_days || 7;
+                        document.getElementById('trialRequireKyc').value = config.trial_money.require_kyc ? 1 : 0;
+                        document.getElementById('trialRequirePayment').value = config.trial_money.require_bind_payment ? 1 : 0;
+                        document.getElementById('trialOnePerUser').value = config.trial_money.one_per_user ? 1 : 0;
+                        document.getElementById('trialDescription').value = config.trial_money.description || '';
+                    }
+
+                    // 投资配置
+                    if (config.investment) {
+                        document.getElementById('investMinCny').value = config.investment.min_amount_cny || 1000;
+                        document.getElementById('investMaxCny').value = config.investment.max_amount_cny || 1000000;
+                        document.getElementById('investMinUsdt').value = config.investment.min_amount_usdt || 100;
+                        document.getElementById('investMaxUsdt').value = config.investment.max_amount_usdt || 100000;
+                        document.getElementById('investRequireKyc').value = config.investment.require_kyc ? 1 : 0;
+                        document.getElementById('investRequirePayment').value = config.investment.require_bind_payment ? 1 : 0;
+                    }
+
+                    // 充值配置
+                    if (config.recharge) {
+                        if (config.recharge.cny) {
+                            document.getElementById('rechargeMinCny').value = config.recharge.cny.min_amount || 100;
+                            document.getElementById('rechargeMaxCny').value = config.recharge.cny.max_amount || 500000;
+                            document.getElementById('rechargeFeeRateCny').value = (config.recharge.cny.fee_rate || 0) * 100;
+                        }
+                        if (config.recharge.usdt) {
+                            document.getElementById('rechargeMinUsdt').value = config.recharge.usdt.min_amount || 10;
+                            document.getElementById('rechargeMaxUsdt').value = config.recharge.usdt.max_amount || 50000;
+                            document.getElementById('rechargeFeeRateUsdt').value = (config.recharge.usdt.fee_rate || 0) * 100;
+                        }
+                    }
+
+                    // 提现配置
+                    if (config.withdrawal) {
+                        if (config.withdrawal.cny) {
+                            document.getElementById('withdrawMinCny').value = config.withdrawal.cny.min_amount || 100;
+                            document.getElementById('withdrawMaxCny').value = config.withdrawal.cny.max_amount || 500000;
+                            document.getElementById('withdrawFeeRateCny').value = (config.withdrawal.cny.fee_rate || 0.005) * 100;
+                            document.getElementById('withdrawDailyLimitCny').value = config.withdrawal.cny.daily_limit || 50000;
+                        }
+                        if (config.withdrawal.usdt) {
+                            document.getElementById('withdrawMinUsdt').value = config.withdrawal.usdt.min_amount || 10;
+                            document.getElementById('withdrawMaxUsdt').value = config.withdrawal.usdt.max_amount || 50000;
+                            document.getElementById('withdrawFeeRateUsdt').value = (config.withdrawal.usdt.fee_rate || 0.005) * 100;
+                            document.getElementById('withdrawDailyLimitUsdt').value = config.withdrawal.usdt.daily_limit || 5000;
+                        }
+                    }
+
+                    // 日利宝配置
+                    if (config.ribao) {
+                        document.getElementById('ribaoRateCny').value = config.ribao.daily_interest_rate_cny || 0.0005;
+                        document.getElementById('ribaoRateUsdt').value = config.ribao.daily_interest_rate_usdt || 0.0005;
+                        document.getElementById('ribaoMinCny').value = config.ribao.min_amount_cny || 100;
+                        document.getElementById('ribaoMinUsdt').value = config.ribao.min_amount_usdt || 10;
+                        document.getElementById('ribaoSettleTime').value = config.ribao.settle_time || '每日19:00';
+                    }
+                }
+            } catch (error) {
+                console.error('加载系统设置失败:', error);
+            }
+        }
+
+        // 渲染VIP配置表格
+        function renderVipConfigTable(vipConfig) {
+            const html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 80px;">等级</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">名称</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 150px;">最低投资(CNY)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 150px;">最低投资(USDT)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">加息(CNY)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">加息(USDT)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">直推返利(CNY)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">直推返利(USDT)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">团队返利(CNY)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 120px;">团队返利(USDT)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 100px;">签到积分</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 80px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${vipConfig.map((v, idx) => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8; text-align: center;">${v.level}</td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="text" value="${v.name}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="name" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.min_investment_cny}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="min_investment_cny" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.min_investment_usdt}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="min_investment_usdt" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" step="0.0001" value="${v.interest_bonus_cny}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="interest_bonus_cny" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" step="0.0001" value="${v.interest_bonus_usdt}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="interest_bonus_usdt" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.direct_rebate_cny}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="direct_rebate_cny" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.direct_rebate_usdt}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="direct_rebate_usdt" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.team_rebate_cny}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="team_rebate_cny" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.team_rebate_usdt}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="team_rebate_usdt" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${v.sign_points}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="sign_points" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8; text-align: center;">
+                                    <button class="btn" style="padding: 4px 8px; font-size: 12px;" onclick="editVipLevel(${idx})">编辑</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('vipConfigTable').innerHTML = html;
+        }
+
+        // 渲染团队奖励表格
+        function renderTeamRewardTable(teamConfig) {
+            const html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 100px;">ID</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 150px;">最少下级成员数</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 150px;">最少累计投资(CNY)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 150px;">最少累计投资(USDT)</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 150px;">奖励积分</th>
+                            <th style="padding: 8px; border: 1px solid #e8e8e8; width: 80px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${teamConfig.map((t, idx) => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8; text-align: center;">${t.id}</td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${t.member_count}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="member_count" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${t.total_investment_cny}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="total_investment_cny" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${t.total_investment_usdt}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="total_investment_usdt" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8;"><input type="number" value="${t.reward_points}" style="width: 100%; padding: 4px; border: 1px solid #d9d9d9; background: white;" data-field="reward_points" data-idx="${idx}"></td>
+                                <td style="padding: 8px; border: 1px solid #e8e8e8; text-align: center;">
+                                    <button class="btn" style="padding: 4px 8px; font-size: 12px;" onclick="editTeamRewardLevel(${idx})">编辑</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('teamRewardTable').innerHTML = html;
+        }
+
+        // 保存所有设置
+        async function saveAllSettings() {
+            const config = {
+                exchange_rate: {
+                    usdt_to_cny: parseFloat(document.getElementById('exchangeRate').value)
+                },
+                vip_config: collectVipConfig(),
+                team_reward_config: collectTeamConfig(),
+                trial_money: {
+                    amount_cny: parseFloat(document.getElementById('trialAmountCny').value),
+                    amount_usdt: parseFloat(document.getElementById('trialAmountUsdt').value),
+                    duration_days: parseInt(document.getElementById('trialDuration').value),
+                    require_kyc: document.getElementById('trialRequireKyc').value == 1,
+                    require_bind_payment: document.getElementById('trialRequirePayment').value == 1,
+                    one_per_user: document.getElementById('trialOnePerUser').value == 1,
+                    description: document.getElementById('trialDescription').value
+                },
+                investment: {
+                    min_amount_cny: parseFloat(document.getElementById('investMinCny').value),
+                    max_amount_cny: parseFloat(document.getElementById('investMaxCny').value),
+                    min_amount_usdt: parseFloat(document.getElementById('investMinUsdt').value),
+                    max_amount_usdt: parseFloat(document.getElementById('investMaxUsdt').value),
+                    require_kyc: document.getElementById('investRequireKyc').value == 1,
+                    require_bind_payment: document.getElementById('investRequirePayment').value == 1
+                },
+                recharge: {
+                    cny: {
+                        min_amount: parseFloat(document.getElementById('rechargeMinCny').value),
+                        max_amount: parseFloat(document.getElementById('rechargeMaxCny').value),
+                        fee_rate: parseFloat(document.getElementById('rechargeFeeRateCny').value) / 100
+                    },
+                    usdt: {
+                        min_amount: parseFloat(document.getElementById('rechargeMinUsdt').value),
+                        max_amount: parseFloat(document.getElementById('rechargeMaxUsdt').value),
+                        fee_rate: parseFloat(document.getElementById('rechargeFeeRateUsdt').value) / 100
+                    }
+                },
+                withdrawal: {
+                    cny: {
+                        min_amount: parseFloat(document.getElementById('withdrawMinCny').value),
+                        max_amount: parseFloat(document.getElementById('withdrawMaxCny').value),
+                        fee_rate: parseFloat(document.getElementById('withdrawFeeRateCny').value) / 100,
+                        daily_limit: parseFloat(document.getElementById('withdrawDailyLimitCny').value)
+                    },
+                    usdt: {
+                        min_amount: parseFloat(document.getElementById('withdrawMinUsdt').value),
+                        max_amount: parseFloat(document.getElementById('withdrawMaxUsdt').value),
+                        fee_rate: parseFloat(document.getElementById('withdrawFeeRateUsdt').value) / 100,
+                        daily_limit: parseFloat(document.getElementById('withdrawDailyLimitUsdt').value)
+                    }
+                },
+                ribao: {
+                    daily_interest_rate_cny: parseFloat(document.getElementById('ribaoRateCny').value),
+                    daily_interest_rate_usdt: parseFloat(document.getElementById('ribaoRateUsdt').value),
+                    min_amount_cny: parseFloat(document.getElementById('ribaoMinCny').value),
+                    min_amount_usdt: parseFloat(document.getElementById('ribaoMinUsdt').value),
+                    settle_time: document.getElementById('ribaoSettleTime').value
+                }
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/system/update-config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const data = await res.json();
+                if (data.code === 1) {
+                    alert('✓ 所有系统配置已保存成功');
+                    loadAllSettings(); // 重新加载
+                } else {
+                    alert('保存失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        }
+
+        // 收集VIP配置数据
+        function collectVipConfig() {
+            const inputs = document.querySelectorAll('#vipConfigTable input');
+            const vipConfig = [];
+            let currentLevel = {};
+            let lastIdx = -1;
+
+            inputs.forEach(input => {
+                const idx = parseInt(input.dataset.idx);
+                const field = input.dataset.field;
+
+                if (idx !== lastIdx) {
+                    if (Object.keys(currentLevel).length > 0) {
+                        vipConfig.push(currentLevel);
+                    }
+                    currentLevel = { level: idx };
+                    lastIdx = idx;
+                }
+
+                if (field) {
+                    if (['min_investment_cny', 'min_investment_usdt', 'max_amount_cny', 'max_amount_usdt'].includes(field)) {
+                        currentLevel[field] = parseFloat(input.value);
+                    } else if (['interest_bonus_cny', 'interest_bonus_usdt'].includes(field)) {
+                        currentLevel[field] = parseFloat(input.value);
+                    } else if (['direct_rebate_cny', 'direct_rebate_usdt', 'team_rebate_cny', 'team_rebate_usdt', 'sign_points'].includes(field)) {
+                        currentLevel[field] = parseInt(input.value);
+                    } else {
+                        currentLevel[field] = input.value;
+                    }
+                }
+            });
+
+            if (Object.keys(currentLevel).length > 0) {
+                vipConfig.push(currentLevel);
+            }
+
+            return vipConfig;
+        }
+
+        // 收集团队奖励配置数据
+        function collectTeamConfig() {
+            const inputs = document.querySelectorAll('#teamRewardTable input');
+            const teamConfig = [];
+            let currentTeam = {};
+            let lastIdx = -1;
+
+            inputs.forEach(input => {
+                const idx = parseInt(input.dataset.idx);
+                const field = input.dataset.field;
+
+                if (idx !== lastIdx) {
+                    if (Object.keys(currentTeam).length > 0) {
+                        currentTeam.id = teamConfig.length + 1;
+                        teamConfig.push(currentTeam);
+                    }
+                    currentTeam = {};
+                    lastIdx = idx;
+                }
+
+                if (field) {
+                    if (['member_count', 'total_investment_cny', 'total_investment_usdt', 'reward_points'].includes(field)) {
+                        currentTeam[field] = parseFloat(input.value);
+                    } else {
+                        currentTeam[field] = input.value;
+                    }
+                }
+            });
+
+            if (Object.keys(currentTeam).length > 0) {
+                currentTeam.id = teamConfig.length + 1;
+                teamConfig.push(currentTeam);
+            }
+
+            return teamConfig;
+        }
+
+        function addVipLevel() {
+            alert('该功能需要后端支持新增VIP等级');
+        }
+
+        function editVipLevel(idx) {
+            alert('编辑VIP等级 ' + idx);
+        }
+
+        function addTeamRewardLevel() {
+            alert('该功能需要后端支持新增奖励等级');
+        }
+
+        function editTeamRewardLevel(idx) {
+            alert('编辑团队奖励等级 ' + idx);
+        }
+
+        // 加载系统设置
+        async function loadSystemSettings() {
+            loadAllSettings();
+        }
+
+        // 保存系统设置（保留旧的名称以保持兼容性）
+        async function saveSystemSettings() {
+            saveAllSettings();
+        }
+
+        // 加载操作日志
+        async function loadLogs() {
+            try {
+                const res = await fetch(`${API_BASE}/logs/list`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const tbody = document.getElementById('logTableBody');
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无日志</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.data.map(log => `
+                            <tr>
+                                <td>${log.id}</td>
+                                <td>${log.type}</td>
+                                <td>${log.operator}</td>
+                                <td>${log.content}</td>
+                                <td>${log.create_time}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('加载日志失败:', error);
+                // 显示模拟数据
+                const tbody = document.getElementById('logTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>1</td>
+                        <td>用户管理</td>
+                        <td>管理员</td>
+                        <td>冻结用户 ID: 3</td>
+                        <td>2024-01-15 10:30:00</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>项目管理</td>
+                        <td>管理员</td>
+                        <td>创建项目: 稳健理财30天</td>
+                        <td>2024-01-15 09:15:00</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>财务管理</td>
+                        <td>管理员</td>
+                        <td>审核通过充值 ID: 1001</td>
+                        <td>2024-01-15 08:45:00</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // 搜索日志
+        async function searchLogs() {
+            const keyword = document.getElementById('logSearch').value;
+            try {
+                const res = await fetch(`${API_BASE}/logs/list`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    let logs = data.data;
+                    if (keyword) {
+                        logs = logs.filter(log =>
+                            log.type.includes(keyword) ||
+                            log.operator.includes(keyword) ||
+                            log.content.includes(keyword)
+                        );
+                    }
+                    const tbody = document.getElementById('logTableBody');
+                    if (logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无日志</td></tr>';
+                    } else {
+                        tbody.innerHTML = logs.map(log => `
+                            <tr>
+                                <td>${log.id}</td>
+                                <td>${log.type}</td>
+                                <td>${log.operator}</td>
+                                <td>${log.content}</td>
+                                <td>${log.create_time}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('搜索日志失败:', error);
+            }
+        }
+
+        // 搜索用户
+        function searchUsers() {
+            loadUsers();
+        }
+
+        // 重置用户搜索
+        function resetUserSearch() {
+            document.getElementById('userSearch').value = '';
+            document.getElementById('userStatusFilter').value = '';
+            document.getElementById('userVipFilter').value = '';
+            loadUsers();
+        }
+
+        // 查看用户详情
+        async function viewUserDetail(userId) {
+            try {
+                const res = await fetch(`${API_BASE}/admin/user-detail?id=${userId}`);
+                const data = await res.json();
+                if (data.code === 1) {
+                    const user = data.data;
+                    const detailHtml = `
+                        <div style="padding: 20px;">
+                            <h3 style="margin-bottom: 16px;">用户详情</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div><strong>用户ID:</strong> ${user.id}</div>
+                                <div><strong>用户名:</strong> ${user.username}</div>
+                                <div><strong>手机号:</strong> ${user.phone || '未绑定'}</div>
+                                <div><strong>邮箱:</strong> ${user.email || '未绑定'}</div>
+                                <div><strong>VIP等级:</strong> VIP${user.vip_level || 0}</div>
+                                <div><strong>实名认证:</strong> ${user.kyc_status === 2 ? '已认证' : user.kyc_status === 1 ? '待审核' : '未认证'}</div>
+                                <div><strong>CNY余额:</strong> ¥${(user.balance_cny || 0).toLocaleString()}</div>
+                                <div><strong>USDT余额:</strong> $${(user.balance_usdt || 0).toLocaleString()}</div>
+                                <div><strong>累计投资:</strong> ¥${(user.total_investment || 0).toLocaleString()}</div>
+                                <div><strong>累计返利:</strong> ¥${(user.total_rebate || 0).toLocaleString()}</div>
+                                <div><strong>状态:</strong> ${user.status === 1 ? '正常' : '冻结'}</div>
+                                <div><strong>注册时间:</strong> ${user.create_time || '未知'}</div>
+                            </div>
+                            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 12px;">
+                                <button class="btn" onclick="closeUserDetailModal()">关闭</button>
+                                <button class="btn btn-primary" onclick="editUser(${user.id})">编辑</button>
+                            </div>
+                        </div>
+                    `;
+                    showModal('用户详情', detailHtml);
+                } else {
+                    alert('加载用户详情失败：' + data.msg);
+                }
+            } catch (error) {
+                alert('加载用户详情失败：' + error.message);
+            }
+        }
+
+        // 编辑用户
+        function editUser(userId) {
+            alert('编辑用户功能待实现，用户ID: ' + userId);
+        }
+
+        // 显示模态框（通用）
+        function showModal(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <h2>${title}</h2>
+                    ${content}
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            };
+        }
+
+        // 关闭用户详情模态框
+        function closeUserDetailModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(m => {
+                if (m.style.display === 'block') {
+                    document.body.removeChild(m);
+                }
+            });
+        }
+
+        // 初始化加载
+        loadDashboard();
+    </script>
+</body>
+</html>
